@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { Instagram, Linkedin, Globe } from "lucide-react";
+import WorkingOnTicker from "./WorkingOnTicker";
 
 const Footer = () => (
+  <>
+  <WorkingOnTicker />
   <footer className="bg-background border-t border-border/40 pt-16 pb-8 px-6 md:px-10">
     <div className="max-w-[1400px] mx-auto">
       {/* Top Row */}
@@ -49,6 +52,7 @@ const Footer = () => (
       </div>
     </div>
   </footer>
+  </>
 );
 
 export default Footer;
