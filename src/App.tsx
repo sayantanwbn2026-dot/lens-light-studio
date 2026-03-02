@@ -15,6 +15,8 @@ import Footer from "./components/Footer";
 import CustomCursor from "./components/CustomCursor";
 import FilmGrain from "./components/FilmGrain";
 import SmoothScroll from "./components/SmoothScroll";
+import ScrollProgress from "./components/ScrollProgress";
+import PageTransition from "./components/PageTransition";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,7 @@ const ScrollToTop = () => {
 const AppContent = () => (
   <>
     <ScrollToTop />
+    <PageTransition />
     <Navigation />
     <main>
       <Routes>
@@ -51,6 +54,7 @@ const App = () => (
         <BrowserRouter>
           <CustomCursor />
           <FilmGrain />
+          <ScrollProgress />
           <AppContent />
         </BrowserRouter>
       </SmoothScroll>

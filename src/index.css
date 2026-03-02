@@ -49,6 +49,11 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
     overflow-x: hidden;
+    scrollbar-width: none;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
   }
 
   ::selection {

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Marquee from "@/components/Marquee";
+import DarkroomHero from "@/components/DarkroomHero";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -38,26 +39,10 @@ const testimonials = [
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollVisible, setScrollVisible] = useState(true);
   const [testimonialIdx, setTestimonialIdx] = useState(0);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero text reveal
-      gsap.from(".hero-line", {
-        clipPath: "inset(100% 0 0 0)",
-        duration: 1.2,
-        stagger: 0.2,
-        ease: "power3.out",
-        delay: 0.3,
-      });
-
-      // Film counter
-      gsap.from(".film-counter", { opacity: 0, duration: 1, delay: 1.2 });
-
-      // Scroll indicator
-      gsap.from(".scroll-indicator", { opacity: 0, y: 20, duration: 0.8, delay: 1.5 });
-
       // Section reveals
       gsap.utils.toArray<HTMLElement>(".reveal-up").forEach(el => {
         gsap.from(el, {
@@ -100,69 +85,31 @@ const Index = () => {
         duration: 1.5,
         ease: "power3.out",
       });
+
+      // Variable font weight on scroll for section headings
+      gsap.utils.toArray<HTMLElement>(".weight-shift").forEach(el => {
+        gsap.fromTo(el,
+          { fontVariationSettings: "'wght' 100" },
+          {
+            fontVariationSettings: "'wght' 900",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 90%",
+              end: "top 20%",
+              scrub: true,
+            },
+          }
+        );
+      });
     }, containerRef);
 
-    const onScroll = () => { if (window.scrollY > 100) setScrollVisible(false); };
-    window.addEventListener("scroll", onScroll);
-
-    return () => { ctx.revert(); window.removeEventListener("scroll", onScroll); };
+    return () => { ctx.revert(); };
   }, []);
 
   return (
     <div ref={containerRef}>
-      {/* HERO */}
-      <section className="relative h-screen flex flex-col justify-center items-center bg-background overflow-hidden">
-        {/* Background gradient orbs */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-foreground/[0.04] rounded-full blur-3xl" />
-          <div className="absolute bottom-1/3 right-1/5 w-64 h-64 bg-foreground/[0.06] rounded-full blur-3xl" />
-          <div className="absolute top-2/3 left-2/3 w-80 h-80 bg-foreground/[0.03] rounded-full blur-3xl" />
-        </div>
-
-        {/* Film counter */}
-        <div className="film-counter absolute top-24 left-6 md:left-10 font-body font-light text-[10px] text-muted tracking-[0.2em] uppercase">
-          001 / Kolkata / Est. 2024
-        </div>
-
-        {/* Film frame corners */}
-        <div className="absolute top-20 left-6 w-8 h-8 border-t border-l border-foreground/20" />
-        <div className="absolute top-20 right-6 w-8 h-8 border-t border-r border-foreground/20" />
-        <div className="absolute bottom-20 left-6 w-8 h-8 border-b border-l border-foreground/20" />
-        <div className="absolute bottom-20 right-6 w-8 h-8 border-b border-r border-foreground/20" />
-
-        {/* Hero Text */}
-        <div className="relative z-10 text-center px-4">
-          <h1 className="hero-line font-display italic text-[10vw] md:text-[9vw] leading-[0.95] text-foreground">
-            Your Vision
-          </h1>
-          <h1 className="hero-line font-display font-bold text-[14vw] md:text-[13vw] leading-[0.9] text-foreground mt-2">
-            Our Lens
-          </h1>
-          <p className="hero-line font-body font-light text-[3vw] md:text-[2vw] text-muted uppercase tracking-[0.4em] mt-6">
-            Perfect Results
-          </p>
-        </div>
-
-        {/* Scroll Indicator */}
-        {scrollVisible && (
-          <div className="scroll-indicator absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-            <span className="font-body font-light text-[10px] text-muted uppercase tracking-[0.3em] writing-mode-vertical" style={{ writingMode: "vertical-rl" }}>
-              Scroll
-            </span>
-            <div className="w-px h-8 bg-muted/50 animate-pulse" />
-          </div>
-        )}
-
-        {/* CTAs */}
-        <div className="absolute bottom-10 right-6 md:right-10 flex items-center gap-6 z-10">
-          <Link to="/work" className="underline-draw font-body font-light text-xs text-foreground/80 uppercase tracking-[0.1em] flex items-center gap-2">
-            View Our Work <ArrowRight className="w-3 h-3" />
-          </Link>
-          <Link to="/contact" className="border border-foreground/40 rounded-full px-5 py-2.5 font-body text-xs uppercase tracking-[0.1em] text-foreground hover:bg-foreground hover:text-background transition-all duration-300">
-            Book a Session
-          </Link>
-        </div>
-      </section>
+      {/* DARKROOM HERO */}
+      <DarkroomHero />
 
       {/* MARQUEE */}
       <Marquee />
@@ -232,7 +179,7 @@ const Index = () => {
       <section className="py-24 md:py-32 px-6 md:px-10">
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-16">
-            <h2 className="reveal-up font-display italic text-[8vw] md:text-[6vw] text-foreground">What We Do</h2>
+            <h2 className="reveal-up weight-shift font-display italic text-[8vw] md:text-[6vw] text-foreground">What We Do</h2>
             <div className="rule-draw w-32 h-px bg-muted/40 mx-auto mt-6 origin-center" />
           </div>
           <div className="reveal-stagger grid grid-cols-1 md:grid-cols-2 gap-6">
