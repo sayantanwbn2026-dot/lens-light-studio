@@ -26,7 +26,6 @@ const Work = () => {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".work-char", { y: -80, opacity: 0, duration: 0.8, stagger: 0.03, ease: "power3.out", delay: 0.2 });
-      gsap.from(".work-overline", { opacity: 0, y: 20, duration: 0.6, delay: 0.6 });
       gsap.from(".filter-pill", { opacity: 0, y: 20, duration: 0.5, stagger: 0.08, delay: 0.8 });
     }, ref);
     return () => ctx.revert();
@@ -34,7 +33,7 @@ const Work = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".work-card", { y: 60, opacity: 0, duration: 0.7, stagger: 0.1, ease: "power3.out" });
+      gsap.from(".work-card", { y: 40, opacity: 0, duration: 0.6, stagger: 0.08, ease: "power3.out" });
     }, ref);
     return () => ctx.revert();
   }, [activeFilter]);
@@ -44,10 +43,9 @@ const Work = () => {
       <div className="max-w-[1400px] mx-auto">
         {/* Hero */}
         <div className="mb-16">
-          <p className="work-overline font-body font-light text-sm text-muted uppercase tracking-[0.2em] mb-2">Our</p>
           <h1 className="overflow-hidden">
             {"WORK".split("").map((c, i) => (
-              <span key={i} className="work-char inline-block font-display text-[16vw] md:text-[12vw] text-foreground leading-none">{c}</span>
+              <span key={i} className="work-char inline-block font-body font-normal text-foreground leading-none" style={{ fontSize: "clamp(4rem, 8vw, 10rem)" }}>{c}</span>
             ))}
           </h1>
         </div>
@@ -58,10 +56,10 @@ const Work = () => {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`filter-pill font-body text-xs uppercase tracking-[0.1em] px-5 py-2.5 rounded-full border transition-all duration-300 ${
+              className={`filter-pill font-body font-light text-[11px] uppercase tracking-[0.12em] px-5 py-2 rounded-full border transition-all duration-300 ${
                 activeFilter === f
                   ? "bg-foreground text-background border-foreground"
-                  : "bg-transparent text-muted border-border/40 hover:border-foreground hover:text-foreground"
+                  : "bg-transparent text-muted border-border/40 hover:border-foreground/60 hover:text-foreground"
               }`}
             >
               {f}
@@ -70,20 +68,20 @@ const Work = () => {
         </div>
 
         {/* Grid */}
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-          {filtered.map((p, i) => (
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-5 space-y-5">
+          {filtered.map((p) => (
             <div key={p.name + activeFilter} className="work-card break-inside-avoid group relative overflow-hidden bg-charcoal">
               <div className={p.aspect === "portrait" ? "aspect-[3/4]" : "aspect-[4/3]"}>
                 <img
                   src={p.img}
                   alt={p.name}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-103 transition-all duration-700"
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700"
                   loading="lazy"
                 />
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                 <p className="font-display italic text-lg text-foreground">{p.name}</p>
-                <p className="font-body font-light text-xs text-muted uppercase tracking-[0.1em]">{p.category}</p>
+                <p className="font-body font-light text-[11px] text-muted uppercase tracking-[0.1em]">{p.category}</p>
               </div>
             </div>
           ))}

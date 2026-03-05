@@ -23,7 +23,6 @@ const About = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Manifesto lines
       gsap.from(".manifesto-line", {
         clipPath: "inset(100% 0 0 0)",
         duration: 1,
@@ -32,19 +31,17 @@ const About = () => {
         scrollTrigger: { trigger: ".manifesto-section", start: "top 60%" },
       });
 
-      // General reveals
       gsap.utils.toArray<HTMLElement>(".about-reveal").forEach(el => {
         gsap.from(el, {
           scrollTrigger: { trigger: el, start: "top 85%" },
-          y: 50, opacity: 0, duration: 0.8, ease: "power3.out",
+          y: 40, opacity: 0, duration: 0.7, ease: "power3.out",
         });
       });
 
-      // Staggered
       gsap.utils.toArray<HTMLElement>(".about-stagger").forEach(container => {
         gsap.from(container.querySelectorAll(".about-child"), {
           scrollTrigger: { trigger: container, start: "top 80%" },
-          y: 40, opacity: 0, duration: 0.7, stagger: 0.15, ease: "power3.out",
+          y: 30, opacity: 0, duration: 0.6, stagger: 0.12, ease: "power3.out",
         });
       });
     }, ref);
@@ -56,13 +53,13 @@ const About = () => {
       {/* Manifesto */}
       <section className="manifesto-section h-screen flex items-center justify-center px-6 md:px-10">
         <div className="text-center max-w-[900px]">
-          <h1 className="manifesto-line font-display italic text-[6vw] md:text-[5vw] text-foreground leading-tight">
+          <h1 className="manifesto-line font-body font-light text-[clamp(1.8rem,5vw,4rem)] text-foreground leading-tight">
             We Believe Every Frame
           </h1>
-          <h1 className="manifesto-line font-display italic text-[6vw] md:text-[5vw] text-foreground leading-tight">
+          <h1 className="manifesto-line font-body font-light text-[clamp(1.8rem,5vw,4rem)] text-foreground leading-tight">
             Is a Decision.
           </h1>
-          <h1 className="manifesto-line font-display italic text-[6vw] md:text-[5vw] text-foreground leading-tight">
+          <h1 className="manifesto-line font-display italic text-[clamp(1.8rem,5vw,4rem)] text-foreground leading-tight">
             Every Decision, A Story.
           </h1>
         </div>
@@ -82,18 +79,17 @@ const About = () => {
             </div>
           </div>
           <div className="relative">
-            {/* Pull quote */}
-            <p className="absolute -top-8 left-0 right-0 font-display italic text-[3vw] text-muted/10 leading-tight select-none pointer-events-none hidden md:block">
+            <p className="absolute -top-6 left-0 right-0 font-display italic text-[2.5vw] text-muted/[0.08] leading-tight select-none pointer-events-none hidden md:block">
               "Photography is not about the camera. It's about what you choose to see."
             </p>
             <div className="about-stagger relative z-10">
-              <p className="about-child font-body font-light text-xs text-muted uppercase tracking-[0.2em] mb-4">The Founder</p>
-              <h2 className="about-child font-display text-3xl md:text-4xl text-foreground leading-tight mb-6">Kingshuk</h2>
+              <p className="about-child font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mb-4">The Founder</p>
+              <h2 className="about-child font-body font-light text-3xl text-foreground leading-tight mb-6">Kingshuk</h2>
               <p className="about-child font-body font-light text-base text-muted-foreground leading-relaxed mb-4">
                 What began as a personal obsession with light and composition became The Twenty-One — a creative media agency rooted in the cultural richness of Kolkata and driven by an uncompromising standard of visual excellence.
               </p>
               <p className="about-child font-body font-light text-base text-muted-foreground leading-relaxed mb-4">
-                Kingshuk founded the studio with a clear vision: to create imagery that doesn't just document moments, but transforms them into lasting narratives. With a background in fine arts and a deep appreciation for cinematic storytelling, he leads every project with the belief that great photography is an act of deliberate composition.
+                Kingshuk founded the studio with a clear vision: to create imagery that doesn't just document moments, but transforms them into lasting narratives.
               </p>
               <p className="about-child font-body font-light text-base text-muted-foreground leading-relaxed">
                 Today, The Twenty-One serves brands, corporations, and families across India — always with the same founding ethos: obsess over every detail, honor the story, deliver the extraordinary.
@@ -106,12 +102,12 @@ const About = () => {
       {/* Philosophy */}
       <section className="py-24 md:py-32 px-6 md:px-10">
         <div className="max-w-[1400px] mx-auto">
-          <h2 className="about-reveal font-display italic text-3xl md:text-4xl text-foreground mb-16">Our Philosophy</h2>
-          <div className="about-stagger grid grid-cols-1 md:grid-cols-3 gap-8">
+          <h2 className="about-reveal font-body font-light text-[12px] text-muted uppercase tracking-[0.2em] mb-12">Our Philosophy</h2>
+          <div className="about-stagger grid grid-cols-1 md:grid-cols-3 gap-6">
             {philosophy.map(p => (
-              <div key={p.title} className="about-child group border border-border/20 p-8 md:p-10 hover:border-foreground/40 hover:-translate-y-2 transition-all duration-500">
-                <p.icon className="w-8 h-8 text-muted mb-6 group-hover:text-foreground transition-colors" strokeWidth={1} />
-                <h3 className="font-display text-xl text-foreground mb-4">{p.title}</h3>
+              <div key={p.title} className="about-child group border border-border/20 p-8 md:p-10 hover:border-foreground/30 hover:-translate-y-2 transition-all duration-500">
+                <p.icon className="w-6 h-6 text-muted mb-6 group-hover:text-foreground transition-colors" strokeWidth={1} />
+                <h3 className="font-body font-medium text-base text-foreground mb-3">{p.title}</h3>
                 <p className="font-body font-light text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
               </div>
             ))}
@@ -122,7 +118,7 @@ const About = () => {
       {/* Team */}
       <section className="py-24 md:py-32 px-6 md:px-10">
         <div className="max-w-[1400px] mx-auto">
-          <h2 className="about-reveal font-display italic text-3xl md:text-4xl text-foreground mb-16">The Team</h2>
+          <h2 className="about-reveal font-body font-light text-[12px] text-muted uppercase tracking-[0.2em] mb-12">The Team</h2>
           <div className="about-stagger grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {team.map(t => (
               <div key={t.name} className="about-child group">
@@ -134,8 +130,8 @@ const About = () => {
                     loading="lazy"
                   />
                 </div>
-                <h4 className="font-display text-base text-foreground group-hover:underline transition-all">{t.name}</h4>
-                <p className="font-body font-light text-xs text-muted">{t.role}</p>
+                <h4 className="font-body font-medium text-sm text-foreground group-hover:underline transition-all">{t.name}</h4>
+                <p className="font-body font-light text-[11px] text-muted">{t.role}</p>
               </div>
             ))}
           </div>

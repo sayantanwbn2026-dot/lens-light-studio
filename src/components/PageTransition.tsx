@@ -41,7 +41,7 @@ const PageTransition = () => {
     tl.fromTo(
       letterRef.current,
       { opacity: 0, scale: 0.8 },
-      { opacity: 0.15, scale: 1, duration: 0.3, ease: "power2.out" },
+      { opacity: 0.12, scale: 1, duration: 0.3, ease: "power2.out" },
       0.2
     );
     tl.to(letterRef.current, { opacity: 0, duration: 0.2 }, 0.55);
