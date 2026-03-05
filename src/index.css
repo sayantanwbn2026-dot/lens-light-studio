@@ -6,17 +6,17 @@
   :root {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
-    --card: 0 0% 10%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 100%;
-    --popover: 0 0% 5%;
+    --popover: 0 0% 3%;
     --popover-foreground: 0 0% 100%;
     --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
-    --secondary: 40 7% 95%;
+    --secondary: 40 5% 94%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 34%;
+    --muted: 0 0% 42%;
     --muted-foreground: 0 0% 77%;
-    --accent: 0 0% 10%;
+    --accent: 0 0% 11%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -34,11 +34,12 @@
     --sidebar-border: 0 0% 16%;
     --sidebar-ring: 0 0% 100%;
 
-    --warm-grey: 0 0% 54%;
+    --mid-grey: 0 0% 42%;
     --silver: 0 0% 77%;
-    --charcoal: 0 0% 10%;
-    --off-white: 40 7% 95%;
-    --deep-black: 0 0% 5%;
+    --charcoal: 0 0% 11%;
+    --off-white: 40 5% 94%;
+    --deep-black: 0 0% 3%;
+    --card-bg: 0 0% 18%;
   }
 
   * {
@@ -57,7 +58,7 @@
   }
 
   ::selection {
-    background: hsl(0 0% 100% / 0.15);
+    background: hsl(0 0% 100% / 0.12);
     color: hsl(0 0% 100%);
   }
 }
@@ -68,7 +69,7 @@
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px;
@@ -77,8 +78,8 @@
 /* Custom cursor */
 .custom-cursor {
   position: fixed;
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  height: 16px;
   border: 1px solid hsl(0 0% 100% / 0.6);
   border-radius: 50%;
   pointer-events: none;
@@ -87,25 +88,26 @@
   transition: width 0.3s cubic-bezier(0.23,1,0.32,1),
               height 0.3s cubic-bezier(0.23,1,0.32,1),
               border-color 0.3s,
-              background 0.3s;
+              background 0.3s,
+              border-radius 0.3s;
   mix-blend-mode: difference;
 }
 
 .custom-cursor.hovering {
-  width: 56px;
-  height: 56px;
+  width: 36px;
+  height: 36px;
   border-color: hsl(0 0% 100% / 0.9);
-  background: hsl(0 0% 100% / 0.05);
+  background: hsl(0 0% 100% / 0.04);
 }
 
 .custom-cursor.clicking {
-  width: 24px;
-  height: 24px;
+  width: 12px;
+  height: 12px;
 }
 
 .custom-cursor.crosshair {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   border-color: hsl(0 0% 100% / 0.4);
   border-radius: 0;
 }
@@ -174,7 +176,7 @@ html.lenis, html.lenis body {
   transition: border-color 0.5s;
 }
 .service-card:hover::before {
-  border-color: hsl(var(--foreground));
+  border-color: hsl(var(--foreground) / 0.6);
 }
 
 /* Form floating labels */
@@ -207,9 +209,9 @@ html.lenis, html.lenis body {
   color: hsl(var(--muted));
   font-family: 'Inter', sans-serif;
   font-weight: 300;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
   pointer-events: none;
 }
@@ -220,13 +222,19 @@ html.lenis, html.lenis body {
 .floating-field select:focus ~ label,
 .floating-field select.has-value ~ label {
   top: 0;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: hsl(var(--muted-foreground));
 }
 
 /* Stat divider */
 .stat-divider {
   width: 1px;
-  background: hsl(var(--muted) / 0.3);
+  background: hsl(var(--border) / 0.5);
   align-self: stretch;
+}
+
+/* Marquee fade edges */
+.marquee-fade {
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
 }

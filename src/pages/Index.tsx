@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Marquee from "@/components/Marquee";
-import DarkroomHero from "@/components/DarkroomHero";
+import HeroSection from "@/components/HeroSection";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -47,7 +46,7 @@ const Index = () => {
       gsap.utils.toArray<HTMLElement>(".reveal-up").forEach(el => {
         gsap.from(el, {
           scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" },
-          y: 60, opacity: 0, duration: 1, ease: "power3.out",
+          y: 40, opacity: 0, duration: 0.8, ease: "power3.out",
         });
       });
 
@@ -56,7 +55,7 @@ const Index = () => {
         const children = container.querySelectorAll(".reveal-child");
         gsap.from(children, {
           scrollTrigger: { trigger: container, start: "top 80%" },
-          y: 60, opacity: 0, duration: 0.8, stagger: 0.15, ease: "power3.out",
+          y: 40, opacity: 0, duration: 0.7, stagger: 0.12, ease: "power3.out",
         });
       });
 
@@ -85,22 +84,6 @@ const Index = () => {
         duration: 1.5,
         ease: "power3.out",
       });
-
-      // Variable font weight on scroll for section headings
-      gsap.utils.toArray<HTMLElement>(".weight-shift").forEach(el => {
-        gsap.fromTo(el,
-          { fontVariationSettings: "'wght' 100" },
-          {
-            fontVariationSettings: "'wght' 900",
-            scrollTrigger: {
-              trigger: el,
-              start: "top 90%",
-              end: "top 20%",
-              scrub: true,
-            },
-          }
-        );
-      });
     }, containerRef);
 
     return () => { ctx.revert(); };
@@ -108,36 +91,33 @@ const Index = () => {
 
   return (
     <div ref={containerRef}>
-      {/* DARKROOM HERO */}
-      <DarkroomHero />
-
-      {/* MARQUEE */}
-      <Marquee />
+      {/* HERO */}
+      <HeroSection />
 
       {/* SIGNATURE REEL */}
       <section className="py-24 md:py-32 px-6 md:px-10 overflow-hidden">
         <div className="reveal-up text-center mb-16">
-          <p className="font-display italic text-2xl md:text-4xl text-foreground leading-relaxed">
+          <p className="font-display italic text-xl md:text-3xl text-foreground leading-relaxed">
             "We Don't Just Capture. We Compose."
           </p>
         </div>
-        <div className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide">
+        <div className="flex gap-5 overflow-x-auto pb-8 snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
           {projects.map((p, i) => (
-            <div key={i} className="snap-start shrink-0 w-[280px] md:w-[350px] group relative">
+            <div key={i} className="snap-start shrink-0 w-[260px] md:w-[320px] group relative">
               <div className="aspect-[3/4] overflow-hidden bg-charcoal">
                 <img
                   src={p.img}
                   alt={p.name}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:sepia-[0.2] group-hover:scale-105 transition-all duration-700"
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.04] transition-all duration-700"
                   loading="lazy"
                 />
               </div>
-              <div className="absolute top-4 right-4 w-8 h-8 rounded-full border border-foreground/30 flex items-center justify-center font-display text-xs text-foreground/60">
+              <div className="absolute top-3 right-3 font-body font-light text-[11px] text-foreground/40 tracking-wider">
                 {String(i + 1).padStart(2, "0")}
               </div>
-              <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <p className="font-body font-semibold text-sm text-foreground">{p.name}</p>
-                <p className="font-display italic text-xs text-muted">{p.category}</p>
+              <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <p className="font-body font-medium text-[13px] text-foreground">{p.name}</p>
+                <p className="font-display italic text-sm text-muted">{p.category}</p>
               </div>
             </div>
           ))}
@@ -158,9 +138,9 @@ const Index = () => {
             </div>
           </div>
           <div className="reveal-stagger">
-            <p className="reveal-child font-body font-light text-xs text-muted uppercase tracking-[0.2em] mb-4">Founded in Kolkata</p>
-            <h2 className="reveal-child font-display text-3xl md:text-4xl text-foreground leading-tight mb-6">
-              A Studio Built on Obsession with Light, Story & Detail.
+            <p className="reveal-child font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mb-4">Founded in Kolkata</p>
+            <h2 className="reveal-child font-body font-light text-2xl md:text-[2.4vw] text-foreground leading-[1.3] mb-6">
+              A studio built on obsession with light, story, and detail.
             </h2>
             <p className="reveal-child font-body font-light text-base text-muted-foreground leading-relaxed mb-4">
               The Twenty-One was born from a singular belief: that every frame holds the power to tell a story that transcends the ordinary. Founded by Kingshuk in the heart of Kolkata, we bring an obsessive attention to light, composition, and narrative.
@@ -168,7 +148,7 @@ const Index = () => {
             <p className="reveal-child font-body font-light text-base text-muted-foreground leading-relaxed mb-8">
               From intimate weddings to bold brand campaigns, we approach every project as a canvas waiting for its defining moment.
             </p>
-            <Link to="/about" className="reveal-child underline-draw font-body font-light text-sm text-foreground uppercase tracking-[0.1em] inline-flex items-center gap-2">
+            <Link to="/about" className="reveal-child underline-draw font-body font-normal text-[13px] text-foreground uppercase tracking-[0.1em] inline-flex items-center gap-2">
               Meet the Studio <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -178,17 +158,19 @@ const Index = () => {
       {/* SERVICES */}
       <section className="py-24 md:py-32 px-6 md:px-10">
         <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="reveal-up weight-shift font-display italic text-[8vw] md:text-[6vw] text-foreground">What We Do</h2>
-            <div className="rule-draw w-32 h-px bg-muted/40 mx-auto mt-6 origin-center" />
+          <div className="text-center mb-16 relative">
+            <p className="reveal-up font-body font-light text-[14px] text-muted uppercase tracking-[0.25em] mb-2">What We Do</p>
+            {/* Decorative watermark */}
+            <span className="font-display italic text-[5vw] text-foreground/[0.06] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap">Services</span>
+            <div className="rule-draw w-20 h-px bg-muted/30 mx-auto mt-4 origin-center" />
           </div>
-          <div className="reveal-stagger grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="reveal-stagger grid grid-cols-1 md:grid-cols-2 gap-5">
             {services.map(s => (
-              <div key={s.num} className="reveal-child service-card group p-8 md:p-10 bg-background hover:bg-charcoal transition-colors duration-500 border border-border/20">
-                <span className="font-display text-[4vw] md:text-[3vw] text-muted/30 block mb-4">{s.num}</span>
-                <h3 className="font-display font-bold text-xl md:text-2xl text-foreground mb-3">{s.name}</h3>
+              <div key={s.num} className="reveal-child service-card group p-10 bg-accent hover:bg-charcoal transition-colors duration-500 border border-border/30">
+                <span className="font-body font-light text-sm text-muted block mb-4">{s.num}</span>
+                <h3 className="font-body font-medium text-lg text-foreground mb-3">{s.name}</h3>
                 <p className="font-body font-light text-sm text-muted-foreground mb-6">{s.desc}</p>
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity font-body text-sm text-foreground">↗</span>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity font-body font-light text-sm text-foreground">↗</span>
               </div>
             ))}
           </div>
@@ -202,14 +184,14 @@ const Index = () => {
             <div key={i} className="flex items-center">
               <div className="text-center py-6 md:py-0 px-8">
                 <div className="flex items-baseline justify-center">
-                  <span className="stat-number font-display font-bold text-[10vw] md:text-[5vw] text-foreground" data-target={s.num}>
+                  <span className="stat-number font-body font-light text-[10vw] md:text-[4.5vw] text-foreground" data-target={s.num}>
                     0
                   </span>
-                  <span className="font-display font-bold text-[6vw] md:text-[3vw] text-foreground">{s.suffix}</span>
+                  <span className="font-body font-light text-[6vw] md:text-[2.5vw] text-foreground">{s.suffix}</span>
                 </div>
-                <p className="font-body font-light text-xs text-muted uppercase tracking-[0.15em] mt-2">{s.label}</p>
+                <p className="font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mt-2">{s.label}</p>
               </div>
-              {i < stats.length - 1 && <div className="stat-divider hidden md:block h-20" />}
+              {i < stats.length - 1 && <div className="stat-divider hidden md:block h-16" />}
             </div>
           ))}
         </div>
@@ -217,36 +199,36 @@ const Index = () => {
 
       {/* TESTIMONIALS */}
       <section className="py-24 md:py-32 px-6 md:px-10">
-        <div className="max-w-[1000px] mx-auto">
-          <h2 className="reveal-up font-display italic text-2xl md:text-3xl text-foreground mb-16">Voices of Trust</h2>
+        <div className="max-w-[900px] mx-auto">
+          <p className="reveal-up font-body font-light text-[12px] text-muted uppercase tracking-[0.2em] mb-12">Client Stories</p>
           <div className="relative">
             {/* Decorative quote */}
-            <span className="absolute -top-8 -left-4 font-display text-[15vw] text-muted/10 leading-none select-none pointer-events-none">"</span>
-            <blockquote className="font-display italic text-xl md:text-3xl text-foreground leading-relaxed mb-8 relative z-10">
+            <span className="absolute -top-6 -left-4 font-display text-[12vw] text-muted/[0.06] leading-none select-none pointer-events-none">"</span>
+            <blockquote className="font-display italic text-xl md:text-[2.5vw] text-foreground leading-relaxed mb-8 relative z-10">
               {testimonials[testimonialIdx].quote}
             </blockquote>
             <div className="mb-8">
-              <p className="font-body font-semibold text-sm text-foreground">{testimonials[testimonialIdx].name}</p>
-              <p className="font-body font-light text-xs text-muted">{testimonials[testimonialIdx].role}</p>
+              <p className="font-body font-medium text-[13px] text-foreground">{testimonials[testimonialIdx].name}</p>
+              <p className="font-body font-light text-[12px] text-muted">{testimonials[testimonialIdx].role}</p>
             </div>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setTestimonialIdx(i => (i === 0 ? testimonials.length - 1 : i - 1))}
-                className="w-10 h-10 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors"
+                className="w-9 h-9 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors"
                 aria-label="Previous"
               >
-                <ChevronLeft className="w-4 h-4 text-foreground" />
+                <ChevronLeft className="w-3.5 h-3.5 text-foreground" />
               </button>
               <button
                 onClick={() => setTestimonialIdx(i => (i === testimonials.length - 1 ? 0 : i + 1))}
-                className="w-10 h-10 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors"
+                className="w-9 h-9 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors"
                 aria-label="Next"
               >
-                <ChevronRight className="w-4 h-4 text-foreground" />
+                <ChevronRight className="w-3.5 h-3.5 text-foreground" />
               </button>
-              <div className="flex gap-2 ml-4">
+              <div className="flex gap-1.5 ml-4">
                 {testimonials.map((_, i) => (
-                  <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === testimonialIdx ? "bg-foreground" : "bg-muted/40"}`} />
+                  <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === testimonialIdx ? "bg-foreground" : "bg-muted/30"}`} />
                 ))}
               </div>
             </div>
@@ -256,18 +238,18 @@ const Index = () => {
 
       {/* CTA BANNER */}
       <section className="py-24 md:py-32 px-6 md:px-10 text-center">
-        <div className="max-w-[800px] mx-auto">
-          <h2 className="reveal-up font-display italic text-[6vw] md:text-[5vw] text-foreground mb-4">
+        <div className="max-w-[700px] mx-auto">
+          <h2 className="reveal-up font-body font-light text-[clamp(1.8rem,4vw,3.5rem)] text-foreground mb-3">
             Ready to tell your story?
           </h2>
-          <p className="reveal-up font-body font-light text-base text-muted mb-10">
-            Let's build something unforgettable.
+          <p className="reveal-up font-display italic text-[clamp(1rem,1.6vw,1.4rem)] text-muted mb-10">
+            Let's create something that lasts.
           </p>
           <Link
             to="/contact"
-            className="reveal-up inline-block border border-foreground/40 rounded-full px-10 py-4 font-body text-sm uppercase tracking-[0.15em] text-foreground hover:bg-foreground hover:text-background transition-all duration-400"
+            className="reveal-up inline-block border border-foreground/40 rounded-full px-10 py-3.5 font-body font-normal text-[12px] uppercase tracking-[0.15em] text-foreground hover:bg-foreground hover:text-background transition-all duration-300"
           >
-            Begin Your Project <ArrowRight className="w-4 h-4 inline ml-2" />
+            Begin Your Project <ArrowRight className="w-3.5 h-3.5 inline ml-1.5" />
           </Link>
         </div>
       </section>

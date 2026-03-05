@@ -15,8 +15,8 @@ const CustomCursor = () => {
     };
 
     const raf = () => {
-      curX += (mouseX - curX) * 0.15;
-      curY += (mouseY - curY) * 0.15;
+      curX += (mouseX - curX) * 0.18;
+      curY += (mouseY - curY) * 0.18;
       cursor.style.left = `${curX}px`;
       cursor.style.top = `${curY}px`;
       requestAnimationFrame(raf);
@@ -33,45 +33,7 @@ const CustomCursor = () => {
     document.addEventListener("mousedown", addClick);
     document.addEventListener("mouseup", removeClick);
 
-    const interactiveEls = document.querySelectorAll("a, button, [role='button'], input, textarea, select");
-    interactiveEls.forEach(el => {
-      el.addEventListener("mouseenter", addHover);
-      el.addEventListener("mouseleave", removeHover);
-    });
-
-    const imgEls = document.querySelectorAll("img");
-    imgEls.forEach(el => {
-      el.addEventListener("mouseenter", addCrosshair);
-      el.addEventListener("mouseleave", removeCrosshair);
-    });
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mousedown", addClick);
-      document.removeEventListener("mouseup", removeClick);
-      interactiveEls.forEach(el => {
-        el.removeEventListener("mouseenter", addHover);
-        el.removeEventListener("mouseleave", removeHover);
-      });
-      imgEls.forEach(el => {
-        el.removeEventListener("mouseenter", addCrosshair);
-        el.removeEventListener("mouseleave", removeCrosshair);
-      });
-    };
-  }, []);
-
-  // Re-bind on route changes
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const cursor = cursorRef.current;
-      if (!cursor) return;
-      const addHover = () => cursor.classList.add("hovering");
-      const removeHover = () => cursor.classList.remove("hovering");
-      const addCrosshair = () => { cursor.classList.add("crosshair"); cursor.classList.remove("hovering"); };
-      const removeCrosshair = () => cursor.classList.remove("crosshair");
-
+    const bindInteractive = () => {
       document.querySelectorAll("a, button, [role='button'], input, textarea, select").forEach(el => {
         el.addEventListener("mouseenter", addHover);
         el.addEventListener("mouseleave", removeHover);
@@ -80,9 +42,20 @@ const CustomCursor = () => {
         el.addEventListener("mouseenter", addCrosshair);
         el.addEventListener("mouseleave", removeCrosshair);
       });
-    });
+    };
+
+    bindInteractive();
+    requestAnimationFrame(raf);
+
+    const observer = new MutationObserver(bindInteractive);
     observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+
+    return () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mousedown", addClick);
+      document.removeEventListener("mouseup", removeClick);
+      observer.disconnect();
+    };
   }, []);
 
   return <div ref={cursorRef} className="custom-cursor hidden md:block" />;
