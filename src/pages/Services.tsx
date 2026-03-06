@@ -68,9 +68,10 @@ const Services = () => {
   return (
     <div ref={ref} className="min-h-screen pt-28 md:pt-36 pb-24 px-6 md:px-10">
       <div className="max-w-[1400px] mx-auto">
+        <p className="font-body text-[10px] uppercase tracking-[0.25em] mb-3" style={{ fontWeight: 300, color: "#7A7A7A" }}>— Services</p>
         <h1 className="overflow-hidden mb-24">
           {"SERVICES".split("").map((c, i) => (
-            <span key={i} className="svc-char inline-block font-body font-normal text-foreground leading-none" style={{ fontSize: "clamp(3rem, 8vw, 10rem)" }}>{c}</span>
+            <span key={i} className="svc-char inline-block font-body text-foreground leading-none" style={{ fontWeight: 500, fontSize: "clamp(3rem, 8vw, 10rem)" }}>{c}</span>
           ))}
         </h1>
 
@@ -84,7 +85,7 @@ const Services = () => {
               </div>
               <div className={`${s.align === "right" ? "md:order-1 md:text-right" : ""}`}>
                 <p className="svc-reveal font-body font-light text-sm text-muted tracking-[0.15em] mb-4">— {s.num}</p>
-                <h2 className="svc-reveal font-display italic text-3xl md:text-[3.5vw] text-foreground leading-tight mb-6">{s.name}</h2>
+                <h2 className="svc-reveal font-body text-3xl md:text-[3.5vw] text-foreground leading-tight mb-6" style={{ fontWeight: 500 }}>{s.name}</h2>
                 <p className="svc-reveal font-body font-light text-base text-muted-foreground leading-relaxed mb-8">{s.desc}</p>
                 <div className={`svc-reveal flex flex-wrap gap-2 mb-8 ${s.align === "right" ? "md:justify-end" : ""}`}>
                   {s.deliverables.map(d => (
@@ -99,11 +100,7 @@ const Services = () => {
               </div>
             </div>
             {i < serviceData.length - 1 && (
-              <div className="flex items-center gap-4">
-                <div className="flex-1 h-px bg-border/30" />
-                <span className="text-muted/30 text-sm">✦</span>
-                <div className="flex-1 h-px bg-border/30" />
-              </div>
+              <div className="h-px bg-border/20 w-full" />
             )}
           </div>
         ))}

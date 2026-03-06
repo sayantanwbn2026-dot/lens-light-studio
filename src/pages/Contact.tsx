@@ -48,9 +48,10 @@ const Contact = () => {
       {/* Hero */}
       <section className="h-[60vh] md:h-[70vh] flex items-center px-6 md:px-10 pt-20">
         <div className="max-w-[1400px] mx-auto">
-          <h1 className="contact-line font-body font-light text-[clamp(2rem,6vw,5rem)] text-foreground leading-tight">Let's Make</h1>
+          <p className="font-body text-[10px] uppercase tracking-[0.25em] mb-4" style={{ fontWeight: 300, color: "#7A7A7A" }}>— Contact</p>
+          <h1 className="contact-line font-body text-[clamp(2rem,6vw,5rem)] text-foreground leading-tight" style={{ fontWeight: 500 }}>Let's Make</h1>
           <h1 className="contact-line font-display italic text-[clamp(2.5rem,8vw,7rem)] text-foreground leading-tight">Something</h1>
-          <h1 className="contact-line font-body font-light text-[clamp(3rem,10vw,9rem)] text-foreground leading-tight">Remarkable.</h1>
+          <h1 className="contact-line font-body text-[clamp(3rem,10vw,9rem)] text-foreground leading-tight" style={{ fontWeight: 200 }}>Remarkable.</h1>
         </div>
       </section>
 

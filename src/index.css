@@ -122,6 +122,18 @@
   animation: marquee 30s linear infinite;
 }
 
+.marquee-track-slow {
+  animation: marquee 42s linear infinite;
+}
+
+/* Contact form input glow */
+.floating-field input:focus,
+.floating-field textarea:focus,
+.floating-field select:focus {
+  border-color: hsl(var(--foreground));
+  box-shadow: 0 2px 20px rgba(255,255,255,0.06);
+}
+
 /* Underline draw animation */
 .underline-draw {
   position: relative;
