@@ -38,7 +38,9 @@ const testimonials = [
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const reelRef = useRef<HTMLDivElement>(null);
   const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const [dragHintVisible, setDragHintVisible] = useState(true);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -71,11 +73,17 @@ const Index = () => {
         });
       });
 
-      // Horizontal rule draw
-      gsap.from(".rule-draw", {
-        scrollTrigger: { trigger: ".rule-draw", start: "top 80%" },
-        scaleX: 0, duration: 1.2, ease: "power3.inOut",
-      });
+      // Horizontal reel progress bar
+      const reelScroll = reelRef.current?.querySelector(".reel-scroll");
+      const progressBar = reelRef.current?.querySelector(".reel-progress-fill");
+      if (reelScroll && progressBar) {
+        reelScroll.addEventListener("scroll", () => {
+          const el = reelScroll as HTMLElement;
+          const pct = el.scrollLeft / (el.scrollWidth - el.clientWidth);
+          gsap.set(progressBar, { scaleX: pct });
+          if (pct > 0.05 && dragHintVisible) setDragHintVisible(false);
+        });
+      }
 
       // About image clip
       gsap.from(".about-image", {
@@ -84,24 +92,44 @@ const Index = () => {
         duration: 1.5,
         ease: "power3.out",
       });
+
+      // Variable font weight on headlines
+      gsap.utils.toArray<HTMLElement>(".weight-shift").forEach(el => {
+        gsap.fromTo(el, { fontWeight: 100 }, {
+          fontWeight: 500,
+          scrollTrigger: { trigger: el, start: "top 90%", end: "top 30%", scrub: true },
+        });
+      });
     }, containerRef);
 
     return () => { ctx.revert(); };
-  }, []);
+  }, [dragHintVisible]);
 
   return (
     <div ref={containerRef}>
-      {/* HERO */}
       <HeroSection />
 
       {/* SIGNATURE REEL */}
-      <section className="py-24 md:py-32 px-6 md:px-10 overflow-hidden">
-        <div className="reveal-up text-center mb-16">
-          <p className="font-display italic text-xl md:text-3xl text-foreground leading-relaxed">
-            "We Don't Just Capture. We Compose."
-          </p>
+      <section ref={reelRef} className="py-24 md:py-32 px-6 md:px-10 overflow-hidden relative">
+        {/* Progress bar */}
+        <div className="w-full h-px bg-border/20 mb-4">
+          <div className="reel-progress-fill h-full bg-foreground origin-left" style={{ transform: "scaleX(0)" }} />
         </div>
-        <div className="flex gap-5 overflow-x-auto pb-8 snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
+
+        <div className="flex items-center justify-between mb-8">
+          <div className="reveal-up">
+            <p className="font-display italic text-xl md:text-3xl text-foreground leading-relaxed">
+              "We Don't Just Capture. We Compose."
+            </p>
+          </div>
+          {dragHintVisible && (
+            <span className="font-body font-light text-[11px] uppercase tracking-[0.15em] text-muted animate-pulse hidden md:block">
+              Drag →
+            </span>
+          )}
+        </div>
+
+        <div className="reel-scroll flex gap-5 overflow-x-auto pb-8 snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
           {projects.map((p, i) => (
             <div key={i} className="snap-start shrink-0 w-[260px] md:w-[320px] group relative">
               <div className="aspect-[3/4] overflow-hidden bg-charcoal">
@@ -138,8 +166,9 @@ const Index = () => {
             </div>
           </div>
           <div className="reveal-stagger">
+            <p className="reveal-child font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ fontWeight: 300, color: "#7A7A7A" }}>— About</p>
             <p className="reveal-child font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mb-4">Founded in Kolkata</p>
-            <h2 className="reveal-child font-body font-light text-2xl md:text-[2.4vw] text-foreground leading-[1.3] mb-6">
+            <h2 className="reveal-child weight-shift font-body text-2xl md:text-[2.4vw] text-foreground leading-[1.3] mb-6" style={{ fontWeight: 300 }}>
               A studio built on obsession with light, story, and detail.
             </h2>
             <p className="reveal-child font-body font-light text-base text-muted-foreground leading-relaxed mb-4">
@@ -159,18 +188,18 @@ const Index = () => {
       <section className="py-24 md:py-32 px-6 md:px-10">
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-16 relative">
-            <p className="reveal-up font-body font-light text-[14px] text-muted uppercase tracking-[0.25em] mb-2">What We Do</p>
-            {/* Decorative watermark */}
+            <p className="reveal-up font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ fontWeight: 300, color: "#7A7A7A" }}>— Services</p>
+            <h2 className="reveal-up weight-shift font-body text-[clamp(2.2rem,3.5vw,4.5rem)] text-foreground" style={{ fontWeight: 500 }}>What We Do</h2>
             <span className="font-display italic text-[5vw] text-foreground/[0.06] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none whitespace-nowrap">Services</span>
-            <div className="rule-draw w-20 h-px bg-muted/30 mx-auto mt-4 origin-center" />
           </div>
           <div className="reveal-stagger grid grid-cols-1 md:grid-cols-2 gap-5">
             {services.map(s => (
-              <div key={s.num} className="reveal-child service-card group p-10 bg-accent hover:bg-charcoal transition-colors duration-500 border border-border/30">
-                <span className="font-body font-light text-sm text-muted block mb-4">{s.num}</span>
-                <h3 className="font-body font-medium text-lg text-foreground mb-3">{s.name}</h3>
-                <p className="font-body font-light text-sm text-muted-foreground mb-6">{s.desc}</p>
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity font-body font-light text-sm text-foreground">↗</span>
+              <div key={s.num} className="reveal-child service-card group p-10 bg-accent hover:bg-charcoal transition-colors duration-500 border border-border/30 relative overflow-hidden">
+                <div className="service-card-bg absolute inset-0 opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M0%2020h40M20%200v40%22%20stroke%3D%22white%22%20stroke-width%3D%220.5%22%2F%3E%3C%2Fsvg%3E')] bg-repeat" />
+                <span className="font-body font-light text-sm text-muted block mb-4 relative z-10">{s.num}</span>
+                <h3 className="font-body font-medium text-lg text-foreground mb-3 relative z-10">{s.name}</h3>
+                <p className="font-body font-light text-sm text-muted-foreground mb-6 relative z-10">{s.desc}</p>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity font-body font-light text-sm text-foreground relative z-10">↗</span>
               </div>
             ))}
           </div>
@@ -184,9 +213,7 @@ const Index = () => {
             <div key={i} className="flex items-center">
               <div className="text-center py-6 md:py-0 px-8">
                 <div className="flex items-baseline justify-center">
-                  <span className="stat-number font-body font-light text-[10vw] md:text-[4.5vw] text-foreground" data-target={s.num}>
-                    0
-                  </span>
+                  <span className="stat-number font-body font-light text-[10vw] md:text-[4.5vw] text-foreground" data-target={s.num}>0</span>
                   <span className="font-body font-light text-[6vw] md:text-[2.5vw] text-foreground">{s.suffix}</span>
                 </div>
                 <p className="font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mt-2">{s.label}</p>
@@ -197,12 +224,22 @@ const Index = () => {
         </div>
       </section>
 
+      {/* FOUNDER QUOTE */}
+      <section className="py-28 md:py-32 px-6 md:px-10">
+        <div className="max-w-[1000px] mx-auto text-center">
+          <blockquote className="reveal-up font-display italic text-[clamp(1.5rem,3.5vw,3.5rem)] text-foreground leading-relaxed">
+            "Photography is not about the camera. It's about what you choose to see."
+          </blockquote>
+          <p className="reveal-up font-body font-light text-[12px] text-muted uppercase tracking-[0.2em] mt-8">— Kingshuk, Founder</p>
+        </div>
+      </section>
+
       {/* TESTIMONIALS */}
       <section className="py-24 md:py-32 px-6 md:px-10">
         <div className="max-w-[900px] mx-auto">
-          <p className="reveal-up font-body font-light text-[12px] text-muted uppercase tracking-[0.2em] mb-12">Client Stories</p>
+          <p className="font-body text-[10px] uppercase tracking-[0.25em] mb-2" style={{ fontWeight: 300, color: "#7A7A7A" }}>— Testimonials</p>
+          <p className="reveal-up font-body font-medium text-[clamp(2.2rem,3.5vw,4.5rem)] text-foreground mb-12">Client Stories</p>
           <div className="relative">
-            {/* Decorative quote */}
             <span className="absolute -top-6 -left-4 font-display text-[12vw] text-muted/[0.06] leading-none select-none pointer-events-none">"</span>
             <blockquote className="font-display italic text-xl md:text-[2.5vw] text-foreground leading-relaxed mb-8 relative z-10">
               {testimonials[testimonialIdx].quote}
@@ -212,18 +249,10 @@ const Index = () => {
               <p className="font-body font-light text-[12px] text-muted">{testimonials[testimonialIdx].role}</p>
             </div>
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setTestimonialIdx(i => (i === 0 ? testimonials.length - 1 : i - 1))}
-                className="w-9 h-9 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors"
-                aria-label="Previous"
-              >
+              <button onClick={() => setTestimonialIdx(i => (i === 0 ? testimonials.length - 1 : i - 1))} className="w-9 h-9 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors" aria-label="Previous">
                 <ChevronLeft className="w-3.5 h-3.5 text-foreground" />
               </button>
-              <button
-                onClick={() => setTestimonialIdx(i => (i === testimonials.length - 1 ? 0 : i + 1))}
-                className="w-9 h-9 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors"
-                aria-label="Next"
-              >
+              <button onClick={() => setTestimonialIdx(i => (i === testimonials.length - 1 ? 0 : i + 1))} className="w-9 h-9 border border-border/40 rounded-full flex items-center justify-center hover:border-foreground transition-colors" aria-label="Next">
                 <ChevronRight className="w-3.5 h-3.5 text-foreground" />
               </button>
               <div className="flex gap-1.5 ml-4">
@@ -239,7 +268,7 @@ const Index = () => {
       {/* CTA BANNER */}
       <section className="py-24 md:py-32 px-6 md:px-10 text-center">
         <div className="max-w-[700px] mx-auto">
-          <h2 className="reveal-up font-body font-light text-[clamp(1.8rem,4vw,3.5rem)] text-foreground mb-3">
+          <h2 className="reveal-up weight-shift font-body text-[clamp(1.8rem,4vw,3.5rem)] text-foreground mb-3" style={{ fontWeight: 300 }}>
             Ready to tell your story?
           </h2>
           <p className="reveal-up font-display italic text-[clamp(1rem,1.6vw,1.4rem)] text-muted mb-10">
