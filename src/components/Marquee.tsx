@@ -1,4 +1,4 @@
-const items = "THE TWENTY-ONE ✦ BRAND CAMPAIGNS ✦ CORPORATE SHOOTS ✦ WEDDING COVERAGE ✦ VISUAL STORYTELLING ✦ KOLKATA ✦ ";
+const items = "THE TWENTY-ONE ✦ BRAND CAMPAIGNS ✦ CORPORATE SHOOTS ✦ WEDDING COVERAGE ✦ VISUAL STORYTELLING ✦ ";
 
 const Marquee = () => (
   <div className="w-full overflow-hidden border-t border-b border-border/30 py-4">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useContent } from '../../hooks/useContent';
+import { useContent, invalidateContent } from '../../hooks/useContent';
+import { AboutContent, TeamMember } from '../../types/database';
 import { AdminPageHeader } from '../../components/admin/ui/AdminPageHeader';
 import { AdminInput, AdminTextarea } from '../../components/admin/ui/AdminInput';
 import { AdminButton } from '../../components/admin/ui/AdminButton';
@@ -24,11 +25,11 @@ import {
 } from '@dnd-kit/sortable';
 
 export const AboutEditor = () => {
-    const { data: aboutData, loading: aboutLoading, mutate: mutateAbout } = useContent('about_content');
-    const { data: teamData, loading: teamLoading, mutate: mutateTeam } = useContent('team_members', { column: 'order_index' });
+    const { data: aboutData, loading: aboutLoading, mutate: mutateAbout } = useContent<AboutContent>('about_content');
+    const { data: teamData, loading: teamLoading, mutate: mutateTeam } = useContent<TeamMember[]>('team_members', { column: 'order_index' });
 
-    const [aboutForm, setAboutForm] = useState<any>({});
-    const [teamItems, setTeamItems] = useState<any[]>([]);
+    const [aboutForm, setAboutForm] = useState<Partial<AboutContent>>({});
+    const [teamItems, setTeamItems] = useState<TeamMember[]>([]);
     const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
 
     const [saving, setSaving] = useState(false);
@@ -42,11 +43,11 @@ export const AboutEditor = () => {
         if (teamData && Array.isArray(teamData)) setTeamItems(teamData);
     }, [teamData]);
 
-    const handleChange = (field: string, value: any) => {
-        setAboutForm((prev: any) => ({ ...prev, [field]: value }));
+    const handleChange = (field: keyof AboutContent, value: unknown) => {
+        setAboutForm((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleTeamUpdate = (id: string, field: string, value: any) => {
+    const handleTeamUpdate = (id: string, field: keyof TeamMember, value: unknown) => {
         setTeamItems((prev) =>
             prev.map((item) => item.id === id ? { ...item, [field]: value } : item)
         );
@@ -92,9 +93,14 @@ export const AboutEditor = () => {
         setSavedAction(false);
 
         // Save about_content
+        const aboutPayload = { ...aboutForm };
+        if (!aboutPayload.id && aboutData?.id) {
+            aboutPayload.id = aboutData.id;
+        }
+
         const { error: aboutError } = await supabase
             .from('about_content')
-            .upsert({ id: 1, ...aboutForm });
+            .upsert(aboutPayload);
 
         // Save team_members
         const { error: teamError } = await supabase
@@ -106,6 +112,8 @@ export const AboutEditor = () => {
         if (!aboutError && !teamError) {
             mutateAbout(aboutForm);
             mutateTeam(teamItems);
+            invalidateContent('about_content');
+            invalidateContent('team_members');
             setSavedAction(true);
             setTimeout(() => setSavedAction(false), 3000);
         } else {
@@ -168,46 +176,59 @@ export const AboutEditor = () => {
                     </div>
                 </section>
 
-                {/* FOUNDER STORY */}
+                {/* FOUNDER 1 STORY */}
                 <section className="flex flex-col gap-8">
                     <div className="pb-4 border-b border-[#1E1E1E]">
-                        <h3 className="text-[13px] font-light text-white uppercase tracking-widest">FOUNDER STORY</h3>
+                        <h3 className="text-[13px] font-light text-white uppercase tracking-widest">FOUNDER 1</h3>
                     </div>
 
                     <div className="bg-[#0A0A0A] border border-[#1E1E1E] p-8 grid grid-cols-1 md:grid-cols-2 gap-12">
-
                         <div className="flex flex-col gap-8">
                             <AdminInput
-                                label="Founder Name"
+                                label="Name"
                                 value={aboutForm.founder_name || ''}
                                 onChange={(e) => handleChange('founder_name', e.target.value)}
                             />
 
-                            <AdminTextarea
-                                label="Founder Story"
-                                value={aboutForm.founder_story || ''}
-                                onChange={(e) => handleChange('founder_story', e.target.value)}
-                                rows={8}
-                                placeholder="Plain text only. Line breaks are preserved."
-                            />
 
-                            <AdminTextarea
-                                label="Founder Pull Quote"
-                                value={aboutForm.founder_quote || ''}
-                                onChange={(e) => handleChange('founder_quote', e.target.value)}
-                                rows={3}
-                                placeholder="(Displayed as full-width typographic moment in Cormorant Garamond italic)"
-                            />
                         </div>
 
                         <div>
                             <ImageUpload
-                                label="Founder Photo"
+                                label="Photo"
+                                description="Recommended: 800×1000px (JPG/WebP). Portrait aspect ratio."
                                 value={aboutForm.founder_image_url}
                                 onChange={(url) => handleChange('founder_image_url', url)}
                             />
                         </div>
+                    </div>
+                </section>
 
+                {/* FOUNDER 2 STORY */}
+                <section className="flex flex-col gap-8">
+                    <div className="pb-4 border-b border-[#1E1E1E]">
+                        <h3 className="text-[13px] font-light text-white uppercase tracking-widest">FOUNDER 2 (Optional)</h3>
+                    </div>
+
+                    <div className="bg-[#0A0A0A] border border-[#1E1E1E] p-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="flex flex-col gap-8">
+                            <AdminInput
+                                label="Name"
+                                value={aboutForm.founder2_name || ''}
+                                onChange={(e) => handleChange('founder2_name', e.target.value)}
+                            />
+
+
+                        </div>
+
+                        <div>
+                            <ImageUpload
+                                label="Photo"
+                                description="Recommended: 800×1000px (JPG/WebP). Portrait aspect ratio."
+                                value={aboutForm.founder2_image_url}
+                                onChange={(url) => handleChange('founder2_image_url', url)}
+                            />
+                        </div>
                     </div>
                 </section>
 
@@ -282,6 +303,7 @@ export const AboutEditor = () => {
                                             <div className="w-full md:w-[240px]">
                                                 <ImageUpload
                                                     label="Photo"
+                                                    description="Recommended: 600×800px (JPG/WebP)."
                                                     value={member.photo_url}
                                                     onChange={(url) => handleTeamUpdate(member.id, 'photo_url', url)}
                                                 />

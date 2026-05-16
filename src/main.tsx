@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import App from "./App.tsx";
+import "./styles/tokens.css";
 import "./index.css";
 
 const queryClient = new QueryClient();

@@ -46,13 +46,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
             onChange(publicUrl);
 
-            // Optionally record to media_library table
-            await supabase.from('media_library').insert([{
-                file_url: publicUrl,
-                file_name: file.name,
-                file_size: file.size,
-            }]);
-
+            // media_library table is not in the schema, skipping insert
         } catch (error) {
             console.error('Error uploading image:', error);
             alert('Error uploading image!');

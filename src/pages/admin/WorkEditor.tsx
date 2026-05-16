@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useContent } from '../../hooks/useContent';
+import { useContent, invalidateContent } from '../../hooks/useContent';
+import { Project } from '../../types/database';
 import { AdminPageHeader } from '../../components/admin/ui/AdminPageHeader';
 import { AdminInput, AdminTextarea } from '../../components/admin/ui/AdminInput';
 import { AdminButton } from '../../components/admin/ui/AdminButton';
 import { ImageUpload } from '../../components/admin/ui/ImageUpload';
 import { MultiImageUpload } from '../../components/admin/ui/MultiImageUpload';
+import { VideoUpload } from '../../components/admin/ui/VideoUpload';
 import { AdminToggle } from '../../components/admin/ui/AdminToggle';
 import { CustomDropdown } from '../../components/admin/ui/CustomDropdown';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
@@ -13,13 +15,13 @@ import { Plus, Pencil, Trash2, X } from 'lucide-react';
 const CATEGORIES = ['Brand', 'Corporate', 'Weddings', 'Traditional'];
 
 export const WorkEditor = () => {
-    const { data, loading, mutate } = useContent('work_projects', { column: 'order_index', ascending: true });
-    const [projects, setProjects] = useState<any[]>([]);
+    const { data, loading, mutate } = useContent<Project[]>('work_projects', { column: 'order_index', ascending: true });
+    const [projects, setProjects] = useState<Project[]>([]);
     const [filter, setFilter] = useState('All');
 
     // Slide-in panel state
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState<any>(null);
+    const [editForm, setEditForm] = useState<(Partial<Project> & { isNew?: boolean }) | null>(null);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -37,18 +39,23 @@ export const WorkEditor = () => {
             id: crypto.randomUUID(),
             title: 'New Project',
             category: 'Brand',
-            description: '',
+            client_name: '',
+            short_description: '',
+            full_description: '',
+            project_year: new Date().getFullYear().toString(),
             cover_image_url: null,
             gallery_images: [],
             featured: false,
             order_index: projects.length,
+            video_type: 'none',
+            video_url: '',
             isNew: true // temporary flag
         };
         setEditForm(newProject);
         setEditingId(newProject.id);
     };
 
-    const handleEdit = (project: any) => {
+    const handleEdit = (project: Project) => {
         setEditForm({ ...project });
         setEditingId(project.id);
     };
@@ -68,7 +75,8 @@ export const WorkEditor = () => {
         if (!editForm) return;
         setSaving(true);
 
-        const { isNew, ...dbData } = editForm;
+        // Sanitize data - remove redundant legacy fields that aren't in schema
+        const { isNew, description, year, ...dbData } = editForm;
 
         const { error } = await supabase
             .from('work_projects')
@@ -82,6 +90,7 @@ export const WorkEditor = () => {
             } else {
                 setProjects(projects.map(p => p.id === dbData.id ? dbData : p));
             }
+            invalidateContent('work_projects');
             setEditingId(null);
             setEditForm(null);
         } else {
@@ -179,7 +188,8 @@ export const WorkEditor = () => {
 
             {/* Slide-in Panel */}
             <div
-                className={`fixed top-0 right-0 h-screen w-full max-w-[480px] bg-black border-l border-[#1E1E1E] z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] ${editingId ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed top-0 right-0 h-screen w-full max-w-[480px] bg-black border-l border-[#1E1E1E] z-50 transform transition-transform duration-500 ${editingId ? 'translate-x-0' : 'translate-x-full'}`}
+                style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
             >
                 {editForm && (
                     <div className="h-full flex flex-col pt-16">
@@ -209,11 +219,24 @@ export const WorkEditor = () => {
                                     onChange={(val) => setEditForm({ ...editForm, category: val })}
                                 />
 
+                                <AdminInput
+                                    label="Client Name"
+                                    value={editForm.client_name || ''}
+                                    onChange={(e) => setEditForm({ ...editForm, client_name: e.target.value })}
+                                />
+
                                 <AdminTextarea
-                                    label="Description"
-                                    value={editForm.description || ''}
-                                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                    rows={3}
+                                    label="Short Description"
+                                    value={editForm.short_description || ''}
+                                    onChange={(e) => setEditForm({ ...editForm, short_description: e.target.value })}
+                                    rows={2}
+                                />
+
+                                <AdminTextarea
+                                    label="Full Description"
+                                    value={editForm.full_description || editForm.description || ''}
+                                    onChange={(e) => setEditForm({ ...editForm, full_description: e.target.value })}
+                                    rows={4}
                                 />
                             </div>
 
@@ -226,6 +249,12 @@ export const WorkEditor = () => {
                                 />
 
                                 <AdminInput
+                                    label="Project Year"
+                                    value={editForm.project_year || editForm.year || ''}
+                                    onChange={(e) => setEditForm({ ...editForm, project_year: e.target.value })}
+                                />
+
+                                <AdminInput
                                     label="Order Index (Sorting)"
                                     type="number"
                                     value={editForm.order_index}
@@ -234,14 +263,40 @@ export const WorkEditor = () => {
                             </div>
 
                             <div className="flex flex-col gap-10 pt-6 border-t border-[#1E1E1E]">
+                                <CustomDropdown
+                                    label="Video Feature"
+                                    value={editForm.video_type || 'none'}
+                                    options={['none', 'upload', 'embed']}
+                                    onChange={(val) => setEditForm({ ...editForm, video_type: val, video_url: '' })}
+                                />
+
+                                {editForm.video_type === 'upload' && (
+                                    <VideoUpload
+                                        label="Upload Video (MP4/WebM)"
+                                        description="Recommended: 16:9 aspect ratio, max 50MB (MP4)."
+                                        value={editForm.video_url}
+                                        onChange={(url) => setEditForm({ ...editForm, video_url: url })}
+                                    />
+                                )}
+
+                                {editForm.video_type === 'embed' && (
+                                    <AdminInput
+                                        label="Embed Link (YouTube/Vimeo)"
+                                        value={editForm.video_url || ''}
+                                        onChange={(e) => setEditForm({ ...editForm, video_url: e.target.value })}
+                                    />
+                                )}
+
                                 <ImageUpload
                                     label="Cover Image"
+                                    description="Recommended: 1600×1200px (4:3) or 1920×1080px (16:9)."
                                     value={editForm.cover_image_url}
                                     onChange={(url) => setEditForm({ ...editForm, cover_image_url: url })}
                                 />
 
                                 <MultiImageUpload
                                     label="Gallery Images"
+                                    description="Recommended: 1920×1080px (16:9). Drag to reorder."
                                     images={editForm.gallery_images || []}
                                     onChange={(urls) => setEditForm({ ...editForm, gallery_images: urls })}
                                 />

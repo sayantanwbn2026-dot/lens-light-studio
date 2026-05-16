@@ -56,7 +56,6 @@ export const Settings = () => {
                 services: await fetchAll('services'),
                 work_projects: await fetchAll('work_projects'),
                 team_members: await fetchAll('team_members'),
-                testimonials: await fetchAll('testimonials'),
                 stats: await fetchAll('stats'),
                 // not exporting media_library logic for brevity, just strings
             };

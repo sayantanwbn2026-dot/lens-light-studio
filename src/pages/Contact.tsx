@@ -1,146 +1,399 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Instagram, Linkedin, Globe, ArrowRight, Check } from "lucide-react";
+import { useContent } from "@/hooks/useContent";
+import { initScrollReveal } from "@/lib/scrollReveal";
+import { supabase } from "@/lib/supabase";
+import { SiteSettings } from "@/types/database";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Contact = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const { data: rawSettings } = useContent<SiteSettings>('site_settings');
+  const settings = rawSettings || {};
+
   const [form, setForm] = useState({ name: "", email: "", service: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [selectOpen, setSelectOpen] = useState(false);
+
+  const services = ["Brand Campaigns", "Corporate Shoots", "Wedding Coverage", "Traditional Coverages"];
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".contact-line", {
-        clipPath: "inset(100% 0 0 0)",
-        duration: 1,
-        stagger: 0.3,
-        ease: "power3.out",
-        delay: 0.3,
-      });
-      gsap.from(".contact-reveal", {
-        scrollTrigger: { trigger: ".contact-form-area", start: "top 80%" },
-        y: 30, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power3.out",
-      });
-    }, ref);
-    return () => ctx.revert();
+    // Animations handled by global ScrollReveal
   }, []);
+  
+  useEffect(() => {
+    // Small delay to ensure any dynamic content from SiteSettings is in DOM
+    const timer = setTimeout(() => {
+      initScrollReveal();
+      ScrollTrigger.refresh();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [rawSettings]);
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = "Valid email is required";
-    if (!form.message.trim()) e.message = "Tell us about your project";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!form.name || !form.email || !form.message) return;
+    
+    setSubmitting(true);
+    setError(null);
+
+    const { error: submitError } = await supabase
+      .from('contact_messages')
+      .insert([
+        { 
+          name: form.name,
+          email: form.email,
+          service: form.service,
+          message: form.message,
+          status: 'unread'
+        }
+      ]);
+
+    setSubmitting(false);
+
+    if (submitError) {
+      console.error(submitError);
+      setError("Failed to send message. Please try again or email us directly.");
+      return;
+    }
+
     setSubmitted(true);
+    
+    // Animate checkmark
+    setTimeout(() => {
+      gsap.fromTo(".success-check", 
+        { strokeDasharray: 50, strokeDashoffset: 50 },
+        { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }
+      );
+    }, 50);
   };
 
   return (
-    <div ref={ref} className="min-h-screen">
-      {/* Hero */}
-      <section className="h-[60vh] md:h-[70vh] flex items-center px-6 md:px-10 pt-20">
-        <div className="max-w-[1400px] mx-auto">
-          <p className="font-body text-[10px] uppercase tracking-[0.25em] mb-4" style={{ fontWeight: 300, color: "#7A7A7A" }}>— Contact</p>
-          <h1 className="contact-line font-body text-[clamp(2rem,6vw,5rem)] text-foreground leading-tight" style={{ fontWeight: 500 }}>Let's Make</h1>
-          <h1 className="contact-line font-display italic text-[clamp(2.5rem,8vw,7rem)] text-foreground leading-tight">Something</h1>
-          <h1 className="contact-line font-body text-[clamp(3rem,10vw,9rem)] text-foreground leading-tight" style={{ fontWeight: 200 }}>Remarkable.</h1>
+    <div ref={ref} className="contact-page">
+      
+      {/* Compact Header Row */}
+      <section className="contact-header container">
+        <div className="contact-header__left">
+          <div className="reveal-label" style={{ fontFamily: 'var(--font-sans)', fontWeight: '500', fontSize: '10px', color: 'var(--color-accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '10px', lineHeight: 1 }}>
+            — CONTACT
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontWeight: '500', fontSize: 'clamp(2rem, 4vw, 3.2rem)', color: 'var(--color-primary)', letterSpacing: '-0.02em', lineHeight: 1.05, margin: 0 }}>
+            <span className="block">Let's Talk.</span>
+          </h1>
         </div>
       </section>
 
-      {/* Form Section */}
-      <section className="contact-form-area py-16 md:py-24 px-6 md:px-10">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24">
-          {/* Left - Info */}
-          <div className="contact-reveal">
-            <div className="mb-10">
-              <p className="font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mb-3">Studio</p>
-              <p className="font-body font-light text-sm text-muted-foreground leading-relaxed">
-                The Twenty-One<br />
-                Kolkata, West Bengal<br />
-                India
-              </p>
+      {/* Main Grid — Form left, Details right */}
+      <section className="contact-body">
+        <div className="container">
+          <div className="contact-main-grid">
+            
+            {/* LEFT — Form (primary) */}
+            <div className="contact-form-col">
+              <div className="contact-form-inner">
+                <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-headline)', fontSize: 'clamp(1rem, 1.6vw, 1.3rem)', color: 'var(--color-primary)', letterSpacing: 'var(--tracking-headline)', marginBottom: '24px', marginTop: 0, lineHeight: 1.1 }}>
+                  Start a conversation.
+                </h3>
+                
+                <form onSubmit={handleSubmit}>
+                  {/* Two-column row: Name + Email */}
+                  <div className="contact-field-row">
+                    <div className="contact-field">
+                      <label className="contact-field-label">Your Name</label>
+                      <input 
+                        type="text" 
+                        className="custom-input"
+                        value={form.name}
+                        onChange={e => setForm({...form, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="contact-field">
+                      <label className="contact-field-label">Email Address</label>
+                      <input 
+                        type="email" 
+                        className="custom-input"
+                        value={form.email}
+                        onChange={e => setForm({...form, email: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Service Custom Select */}
+                  <div className="contact-field" style={{ position: 'relative' }}>
+                    <label className="contact-field-label">Service</label>
+                    <div 
+                      className={`custom-input ${selectOpen ? 'focused' : ''}`}
+                      style={{ cursor: 'pointer', paddingBottom: '8px', minHeight: '28px' }}
+                      onClick={() => setSelectOpen(!selectOpen)}
+                    >
+                      {form.service || <span style={{ color: 'var(--color-muted)' }}>Select a service...</span>}
+                    </div>
+                    
+                    {selectOpen && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        width: '100%',
+                        backgroundColor: 'var(--color-white)',
+                        border: '1px solid var(--color-border)',
+                        zIndex: 50,
+                      }}>
+                        {services.map(s => (
+                          <div 
+                            key={s}
+                            className="custom-select-option"
+                            onClick={() => { setForm({...form, service: s}); setSelectOpen(false); }}
+                            style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-light)', fontSize: '13px', color: 'var(--color-primary)', padding: '10px 16px', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                          >
+                            {s}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Message */}
+                  <div className="contact-field">
+                    <label className="contact-field-label">Tell us about your project</label>
+                    <textarea 
+                      className="custom-input"
+                      rows={3}
+                      value={form.message}
+                      onChange={e => setForm({...form, message: e.target.value})}
+                      required
+                      style={{ resize: 'none' }}
+                    />
+                  </div>
+
+                  {/* Submit */}
+                  {!submitted ? (
+                    <div className="flex flex-col gap-4">
+                      <button 
+                        type="submit" 
+                        className="form-submit-btn" 
+                        disabled={submitting}
+                        style={{
+                          width: '100%',
+                          height: '44px',
+                          backgroundColor: submitting ? 'var(--color-muted)' : 'var(--color-primary)',
+                          color: 'var(--color-white)',
+                          fontFamily: 'var(--font-sans)',
+                          fontWeight: 'var(--weight-regular)',
+                          fontSize: '12px',
+                          letterSpacing: 'var(--tracking-caps)',
+                          borderRadius: 'var(--radius-sm)',
+                          border: 'none',
+                          cursor: submitting ? 'default' : 'pointer',
+                          transition: 'background-color 0.25s var(--ease-out)',
+                          opacity: submitting ? 0.7 : 1
+                        }}
+                      >
+                        {submitting ? "Sending..." : "Send Message →"}
+                      </button>
+                      {error && (
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: '#ff4444', margin: 0, textAlign: 'center' }}>
+                          {error}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', height: '44px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '6px' }}>
+                        <path className="success-check" d="M20 6L9 17L4 12" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-light)', fontSize: '12px', color: 'var(--color-muted)' }}>
+                        Message sent. We'll be in touch.
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </div>
             </div>
-            <div className="mb-10">
-              <p className="font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mb-3">Contact</p>
-              <a href="mailto:hello@thetwentyone.in" className="font-body font-light text-sm text-foreground hover:opacity-70 transition-opacity block mb-1">hello@thetwentyone.in</a>
-              <span className="font-body font-light text-sm text-muted-foreground">+91 98765 43210</span>
-            </div>
-            <div>
-              <p className="font-body font-light text-[11px] text-muted uppercase tracking-[0.2em] mb-3">Follow</p>
-              <div className="flex flex-col gap-2">
+
+            {/* RIGHT — Contact Details (secondary) */}
+            <div className="contact-details-col">
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {[
-                  { label: "Instagram", icon: Instagram },
-                  { label: "LinkedIn", icon: Linkedin },
-                  { label: "Behance", icon: Globe },
-                ].map(s => (
-                  <a key={s.label} href="#" className="underline-draw font-body font-light text-[13px] text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2 w-fit">
-                    <s.icon className="w-3.5 h-3.5" /> {s.label}
-                  </a>
+                  { label: "PHONE", value: settings.studio_phone || "+91 98765 43210", href: `tel:${settings.studio_phone || '+919876543210'}` },
+                  { label: "EMAIL", value: settings.studio_email || "hello@thetwentyone.in", href: `mailto:${settings.studio_email || 'hello@thetwentyone.in'}` },
+                  { label: "ADDRESS", value: settings.studio_address || "Studio Address, India" },
+                  { label: "INSTAGRAM", value: "@the.twentyone", href: settings.instagram_url || "#" }
+                ].map((item, idx) => (
+                  <div key={idx} className="contact-detail-row" style={{ 
+                    padding: '16px 0', 
+                    borderBottom: '1px solid var(--color-border)',
+                    position: 'relative',
+                    transition: 'background-color 0.2s var(--ease-out)'
+                  }}>
+                    <div className="contact-accent-bar" style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: '2px',
+                      backgroundColor: 'var(--color-accent)',
+                      opacity: 0,
+                      transform: 'scaleY(0)',
+                      transition: 'all 0.2s var(--ease-out)'
+                    }} />
+                    
+                    <div style={{ paddingLeft: '16px' }}>
+                      <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-medium)', fontSize: '9px', color: 'var(--color-muted)', letterSpacing: 'var(--tracking-caps)', textTransform: 'uppercase', marginBottom: '4px', lineHeight: 1 }}>
+                        {item.label}
+                      </div>
+                      {item.href ? (
+                        <a href={item.href} style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-regular)', fontSize: '14px', color: 'var(--color-primary)', textDecoration: 'none' }}>
+                          {item.value}
+                        </a>
+                      ) : (
+                        <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-regular)', fontSize: '14px', color: 'var(--color-primary)' }}>
+                          {item.value}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* Right - Form */}
-          <div className="contact-reveal">
-            {submitted ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-14 h-14 rounded-full border border-foreground flex items-center justify-center mb-6">
-                  <Check className="w-5 h-5 text-foreground" />
-                </div>
-                <h3 className="font-display italic text-2xl text-foreground mb-2">Vision Received</h3>
-                <p className="font-body font-light text-sm text-muted">We'll get back to you within 24 hours.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="floating-field">
-                  <input type="text" placeholder=" " value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                  <label>Your Name</label>
-                  {errors.name && <p className="font-body font-light text-[11px] text-destructive mt-1">{errors.name}</p>}
-                </div>
-                <div className="floating-field">
-                  <input type="email" placeholder=" " value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-                  <label>Your Email</label>
-                  {errors.email && <p className="font-body font-light text-[11px] text-destructive mt-1">{errors.email}</p>}
-                </div>
-                <div className="floating-field">
-                  <select value={form.service} onChange={e => setForm(f => ({ ...f, service: e.target.value }))} className={form.service ? "has-value" : ""}>
-                    <option value="">—</option>
-                    <option value="brand">Brand Campaigns</option>
-                    <option value="corporate">Corporate Shoots</option>
-                    <option value="wedding">Wedding Coverage</option>
-                    <option value="traditional">Traditional Coverages</option>
-                  </select>
-                  <label>Service Interested In</label>
-                </div>
-                <div className="floating-field">
-                  <textarea rows={4} placeholder=" " value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} />
-                  <label>Tell Us About Your Project</label>
-                  {errors.message && <p className="font-body font-light text-[11px] text-destructive mt-1">{errors.message}</p>}
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-foreground text-background font-body font-normal text-[12px] uppercase tracking-[0.15em] py-3.5 hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2"
-                >
-                  Send Your Vision <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-                <p className="text-center font-body font-light text-[11px] text-muted">
-                  Or simply write to us at{" "}
-                  <a href="mailto:hello@thetwentyone.in" className="underline-draw text-foreground">hello@thetwentyone.in</a>
-                </p>
-              </form>
-            )}
           </div>
         </div>
       </section>
+
+      <style>{`
+        .contact-page {
+          background-color: var(--color-white);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .contact-header {
+          padding-top: 100px;
+          padding-bottom: 28px;
+        }
+        .contact-body {
+          flex: 1;
+        }
+        .contact-main-grid {
+          display: grid;
+          grid-template-columns: 1fr 340px;
+          gap: 60px;
+          align-items: start;
+        }
+        .contact-form-inner {
+          background-color: var(--color-surface);
+          padding: 32px 36px;
+        }
+        .contact-field-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+        }
+        .contact-detail-row:hover {
+          background-color: var(--color-surface);
+        }
+        .contact-detail-row:hover .contact-accent-bar {
+          opacity: 1 !important;
+          transform: scaleY(1) !important;
+        }
+        /* Contact field */
+        .contact-field {
+          position: relative;
+          margin-bottom: 20px;
+        }
+        .contact-field::before {
+          content: '';
+          position: absolute;
+          left: -12px;
+          top: 18px;
+          bottom: 0;
+          width: 1px;
+          background: var(--color-border);
+          transition: width 0.3s var(--ease-out), background 0.3s var(--ease-out);
+        }
+        .contact-field:focus-within::before {
+          width: 2px;
+          background: var(--color-accent);
+        }
+        .contact-field-label {
+          font-family: var(--font-sans);
+          font-weight: var(--weight-medium);
+          font-size: 9px;
+          color: var(--color-muted);
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+          line-height: 1;
+          display: block;
+          transition: letter-spacing 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+        }
+        .contact-field:focus-within .contact-field-label {
+          letter-spacing: 0.16em;
+          transform: translateY(-2px);
+        }
+        .custom-input {
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid var(--color-border-strong);
+          color: var(--color-primary);
+          font-family: var(--font-sans);
+          font-weight: var(--weight-light);
+          font-size: 14px;
+          padding: 6px 0;
+          width: 100%;
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .custom-input:focus, .custom-input.focused {
+          border-bottom-color: var(--color-accent);
+        }
+        .custom-select-option:hover { background-color: var(--color-surface); }
+        .form-submit-btn:hover { background-color: var(--color-accent) !important; }
+
+        /* Laptop */
+        @media (max-width: 1279px) {
+          .contact-main-grid {
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+          }
+        }
+        /* Tablet */
+        @media (max-width: 1023px) {
+          .contact-header { padding-top: 88px; padding-bottom: 20px; }
+          .contact-main-grid {
+            grid-template-columns: 1fr;
+            gap: 36px;
+          }
+          .contact-details-col { order: 1; }
+          .contact-form-col { order: 0; }
+        }
+        /* Mobile */
+        @media (max-width: 767px) {
+          .contact-header { padding-top: 100px; padding-bottom: 24px; }
+          .contact-main-grid {
+            grid-template-columns: 1fr;
+            gap: 48px;
+          }
+          .contact-field-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+          }
+          .contact-form-inner {
+            padding: 32px 20px;
+            margin: 0 -20px; /* Full-bleed look on mobile */
+          }
+          .contact-field { margin-bottom: 24px; }
+          .contact-field::before { left: 0; display: none; } /* Remove the side line on mobile for cleaner look */
+          .custom-input { font-size: 16px; } /* Prevent iOS zoom */
+        }
+      `}</style>
     </div>
   );
 };

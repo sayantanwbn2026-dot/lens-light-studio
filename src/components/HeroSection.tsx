@@ -1,302 +1,250 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
-import CameraHUD from "./CameraHUD";
-import ApertureRing from "./ApertureRing";
 import { useContent } from "../hooks/useContent";
-import { Skeleton } from "./ui/skeleton";
+import { useMagnetic } from "../hooks/useMagnetic";
+import { useDevice } from "../contexts/DeviceContext";
+import { HeroContent, SiteSettings } from "@/types/database";
+import "./HeroSection.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const HeroSection = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const magnetBtnRef = useRef<HTMLAnchorElement>(null);
-  const { data: heroData, loading } = useContent('hero_content');
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { data: heroData, loading: heroLoading } = useContent<HeroContent>('hero_content');
+  const { data: siteSettings, loading: settingsLoading } = useContent<SiteSettings>('site_settings');
+  const { buttonRef: workMagRef, textRef: workTextRef } = useMagnetic();
+  const { isTouchDevice, isReducedMotion } = useDevice();
+  const [useImageFallback, setUseImageFallback] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
+  const isDataLoading = heroLoading || settingsLoading;
+
+  useLayoutEffect(() => {
+    if (isDataLoading) return; // Wait for data before starting animations
+
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.3 });
+      const tl = gsap.timeline({ delay: 0.2 });
 
-      // Overline
-      tl.from(".hero-overline", { opacity: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+      // Inset frame opacity
+      tl.fromTo(".hero-inset-frame", 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 1.2, ease: "power2.out" }, 
+        0
+      );
 
-      // Headline lines with clipPath
-      tl.from(".hero-line-1", { clipPath: "inset(100% 0 0 0)", duration: 0.8, ease: "power3.out" }, 0.5);
-      tl.from(".hero-line-2", { clipPath: "inset(100% 0 0 0)", duration: 0.8, ease: "power3.out" }, 0.7);
-      tl.from(".hero-line-3", { clipPath: "inset(100% 0 0 0)", duration: 0.8, ease: "power3.out" }, 0.9);
+      // Background image scale and opacity
+      tl.fromTo(".hero-bg-img", 
+        { scale: 1.05, opacity: 0 }, 
+        { scale: 1, opacity: 1, duration: 1.8, ease: "power2.out" }, 
+        0
+      );
 
-      // Breathing letter-spacing on "TWENTY"
-      gsap.to(".hero-line-2", {
-        letterSpacing: "0.09em",
-        duration: 2,
-        ease: "power1.inOut",
-        yoyo: true,
-        repeat: -1,
-        delay: 1.8,
-      });
+      // HUD elements
+      tl.fromTo(".hud-el", 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 
+        0.8
+      );
 
-      // Right column tagline
-      tl.from(".hero-tagline-col", { opacity: 0, x: 20, duration: 0.7, ease: "power3.out" }, 1.1);
+      // Headline and Tagline
+      tl.fromTo(".hero-headline", 
+        { clipPath: "inset(0 0 100% 0)", opacity: 0 }, 
+        { clipPath: "inset(0 0 0% 0)", opacity: 1, duration: 1.0, ease: "expo.out" }, 
+        0.6
+      );
+      
+      tl.fromTo(".hero-headline .reveal-inner",
+        { y: "100%", opacity: 0 },
+        { y: "0%", opacity: 1, duration: 1.0, ease: "power2.out" },
+        0.7
+      );
+      
+      tl.fromTo(".hero-tagline", 
+        { clipPath: "inset(0 0 100% 0)", opacity: 0 }, 
+        { clipPath: "inset(0 0 0% 0)", opacity: 1, duration: 1.0, ease: "expo.out" }, 
+        0.8
+      );
 
-      // Focus brackets lock animation
-      tl.from(".focus-bracket", {
-        scale: 1.6,
-        opacity: 0,
-        duration: 1.2,
-        ease: "expo.out",
-        stagger: 0.05,
-      }, 0.6);
 
-      // Focus dot blink
-      tl.fromTo(".focus-dot", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 1.8);
-      tl.to(".focus-dot", { opacity: 0.6, duration: 0.3, yoyo: true, repeat: 2 }, 1.9);
+      // Bottom strip & scroll indicator
+      tl.fromTo([".hero-bottom-strip", ".scroll-indicator-wrapper"], 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.5, ease: "power2.out" }, 
+        1.2
+      );
 
-      // CTAs
-      tl.from(".hero-cta-group", { opacity: 0, y: 15, duration: 0.5, ease: "power3.out" }, 1.3);
-
-      // Scroll indicator
-      tl.from(".scroll-indicator", { opacity: 0, duration: 0.6 }, 1.5);
-
-      // Scroll indicator dot loop
+      // Scroll dot bounce
       gsap.to(".scroll-dot", {
-        y: 68,
-        duration: 1.5,
-        ease: "power1.inOut",
+        y: 6,
+        duration: 0.8,
         repeat: -1,
-        delay: 2,
+        yoyo: true,
+        ease: "power1.inOut"
       });
 
-      // Corner brackets contract on scroll
-      gsap.to(".corner-bracket", {
-        scrollTrigger: {
-          trigger: ref.current,
-          start: "top top",
-          end: "300px top",
-          scrub: true,
-        },
-        x: (i: number) => (i % 2 === 0 ? 20 : -20),
-        y: (i: number) => (i < 2 ? 20 : -20),
-      });
+      // Parallax & Fade-out on scroll (skip on touch / reduced motion)
+      if (!isTouchDevice && !isReducedMotion) {
+        gsap.to(".hero-bg-img", {
+          y: 80,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: true
+          }
+        });
 
-      // Focus brackets track cursor
-      const heroEl = ref.current;
-      if (heroEl) {
-        const handleMouseMove = (e: MouseEvent) => {
-          const rect = heroEl.getBoundingClientRect();
-          const cx = (e.clientX - rect.left) / rect.width - 0.5;
-          const cy = (e.clientY - rect.top) / rect.height - 0.5;
-          gsap.to(".focus-bracket", {
-            x: cx * 15,
-            y: cy * 15,
-            duration: 0.6,
-            ease: "power2.out",
-          });
-        };
-        heroEl.addEventListener("mousemove", handleMouseMove);
-        return () => heroEl.removeEventListener("mousemove", handleMouseMove);
+        // S1: Kinetic typography — font weight interpolation on scroll
+        const heroHL = document.querySelector('.hero-headline') as HTMLElement;
+        if (heroHL) {
+          gsap.fromTo(heroHL,
+            { fontVariationSettings: "'wght' 500" },
+            {
+              fontVariationSettings: "'wght' 300",
+              ease: "none",
+              scrollTrigger: {
+                trigger: heroRef.current,
+                start: "top top",
+                end: "bottom top",
+                scrub: 1,
+              }
+            }
+          );
+        }
       }
-    }, ref);
+
+    }, heroRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [heroData, isDataLoading, isReducedMotion, isTouchDevice]); // Re-run if data changes or motion settings change
 
-  // Magnetic button effect
+  // Preload video
   useEffect(() => {
-    const btn = magnetBtnRef.current;
-    if (!btn) return;
+    if (heroData?.hero_video_url && heroData?.hero_video_enabled) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'video';
+      link.href = heroData.hero_video_url;
+      document.head.appendChild(link);
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [heroData?.hero_video_url, heroData?.hero_video_enabled]);
 
-    const handleMove = (e: MouseEvent) => {
-      const rect = btn.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 50) {
-        gsap.to(btn, { x: dx * 0.3, y: dy * 0.3, duration: 0.3, ease: "power2.out" });
-      } else {
-        gsap.to(btn, { x: 0, y: 0, duration: 0.3, ease: "power2.out" });
-      }
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, []);
+  // Headline string
+  const rawHeadline = heroData 
+    ? `${heroData.headline_line1 || ""} ${heroData.headline_line2 || ""} ${heroData.headline_line3 || ""}`.trim() 
+    : (heroLoading ? "" : "The Twenty-One");
+  
+  // Fix for 'ONEE' typo in database (prevents "THE THE TWENTY-ONE" duplication)
+  const headline = rawHeadline.replace(/(\bTHE\s+)?TWENTY\s+ONEE/gi, 'THE TWENTY-ONE');
 
   return (
-    <section ref={ref} className="relative h-screen w-full overflow-hidden bg-background">
-      {/* Background image */}
-      <div className="absolute inset-0">
-        {loading ? (
-          <Skeleton className="w-full h-full rounded-none" />
-        ) : (
-          <img
-            src={heroData?.background_image_url || "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1400&q=80"}
-            alt="Hero Background"
-            className="w-full h-full object-cover"
-            style={{ filter: "brightness(0.72) contrast(1.08) grayscale(1)" }}
-          />
-        )}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "radial-gradient(ellipse at 60% 50%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)",
-          }}
-        />
-      </div>
+    <>
+      <section ref={heroRef} data-theme="dark" className="relative h-[100svh] w-full overflow-hidden bg-[var(--color-black)]">
+        
+        {/* Background Layer */}
+        <div className="absolute inset-0 z-0 bg-[#0D0C0B]">
+          {isDataLoading ? (
+             <div className="w-full h-full bg-[#0D0C0B]" />
+          ) : heroData?.hero_video_url && heroData?.hero_video_enabled && !useImageFallback ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                zIndex: 0,
+                opacity: 0,
+                transition: 'opacity 0.8s ease-in-out',
+                willChange: 'opacity',
+              }}
+              onCanPlay={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.play().catch(() => {
+                  setUseImageFallback(true);
+                });
+              }}
+              onError={() => setUseImageFallback(true)}
+            >
+              <source src={heroData.hero_video_url} type="video/mp4" />
+            </video>
+          ) : (
+            <img
+              src={heroData?.background_image_url || ""}
+              alt="Hero Background"
+              className="hero-bg-img w-full h-full object-cover object-center"
+              loading="eager"
+              fetchPriority="high"
+            />
+          )}
+          <div className="absolute inset-0 hero-overlay" />
+        </div>
 
-      {/* Film frame corner brackets */}
-      <div className="corner-bracket absolute top-16 left-6 w-6 h-6 border-t border-l border-foreground/20" />
-      <div className="corner-bracket absolute top-16 right-6 w-6 h-6 border-t border-r border-foreground/20" />
-      <div className="corner-bracket absolute bottom-16 left-6 w-6 h-6 border-b border-l border-foreground/20" />
-      <div className="corner-bracket absolute bottom-16 right-6 w-6 h-6 border-b border-r border-foreground/20" />
+        {/* Inset Frame */}
+        <div className="hero-inset-frame">
 
-      {/* Main content — asymmetric two-column */}
-      <div className="absolute inset-0 z-10 flex items-center">
-        <div className="w-full max-w-[1400px] mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-          {/* Left column — headline */}
-          <div className="md:col-span-7 lg:col-span-7" style={{ paddingLeft: "2%" }}>
-            {/* Overline */}
-            {loading ? (
-              <Skeleton className="h-[14px] w-32 mb-8" />
-            ) : (
-              <p className="hero-overline font-body text-[10px] tracking-[0.35em] uppercase mb-8" style={{ fontWeight: 300, color: "#7A7A7A" }}>
-                {heroData?.overline_text || "Kolkata · Est. 2024"}
-              </p>
-            )}
 
-            {/* Headline staircase */}
-            <div className="relative">
-              {/* Focus brackets around TWENTY */}
-              <div className="hidden md:block absolute pointer-events-none" style={{ top: "calc(0% + 2.5rem)", left: "-12px", right: "auto", bottom: "auto" }}>
-                {/* Top-left bracket */}
-                <svg className="focus-bracket absolute" style={{ top: "-8px", left: "-8px" }} width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M0 12V0h12" stroke="white" strokeWidth="1" opacity="0.5" />
-                </svg>
-                {/* Top-right bracket */}
-                <svg className="focus-bracket absolute" style={{ top: "-8px", left: "calc(100% + 120px)" }} width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M20 12V0H8" stroke="white" strokeWidth="1" opacity="0.5" />
-                </svg>
-              </div>
-
-              {loading ? (
-                <>
-                  <Skeleton className="h-[80px] md:h-[120px] w-3/4 mb-4" />
-                  <Skeleton className="h-[90px] md:h-[140px] w-full mb-4" />
-                  <Skeleton className="h-[80px] md:h-[120px] w-1/2" />
-                </>
-              ) : (
-                <>
-                  <h1 className="hero-line-1 font-body uppercase text-foreground leading-none mb-1" style={{ fontWeight: 200, fontSize: "clamp(3.5rem, 6vw, 7.5rem)", letterSpacing: "0.12em", clipPath: "inset(0)" }}>
-                    {heroData?.headline_line1 || "THE"}
-                  </h1>
-                  <h1 className="hero-line-2 font-body uppercase text-foreground leading-none mb-1 relative" style={{ fontWeight: 500, fontSize: "clamp(4.5rem, 8vw, 10rem)", letterSpacing: "0.06em", clipPath: "inset(0)" }}>
-                    {heroData?.headline_line2 || "TWENTY"}
-                    {/* Focus dot */}
-                    <span className="focus-dot absolute hidden md:block" style={{ right: "-24px", top: "50%", transform: "translateY(-50%)", width: "6px", height: "6px", borderRadius: "50%", background: "white", opacity: 0 }} />
-                  </h1>
-                  <h1 className="hero-line-3 font-body uppercase leading-none" style={{ fontWeight: 200, fontSize: "clamp(3.5rem, 6vw, 7.5rem)", letterSpacing: "0.2em", WebkitTextStroke: "1px white", WebkitTextFillColor: "transparent", clipPath: "inset(0)" }}>
-                    {heroData?.headline_line3 || "ONE"}
-                  </h1>
-                </>
-              )}
-
-              {/* Bottom brackets for TWENTY */}
-              <div className="hidden md:block absolute pointer-events-none" style={{ bottom: "calc(0% + 2.5rem)", left: "-12px" }}>
-                <svg className="focus-bracket absolute" style={{ bottom: "-8px", left: "-8px" }} width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M0 8V20h12" stroke="white" strokeWidth="1" opacity="0.5" />
-                </svg>
-                <svg className="focus-bracket absolute" style={{ bottom: "-8px", left: "calc(100% + 120px)" }} width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M20 8V20H8" stroke="white" strokeWidth="1" opacity="0.5" />
-                </svg>
-              </div>
-            </div>
-
-            {/* CTAs */}
-            <div className="hero-cta-group flex items-center gap-6 mt-14">
-              {loading ? (
-                <>
-                  <Skeleton className="h-6 w-32" />
-                  <div className="w-px h-5 bg-muted/40" />
-                  <Skeleton className="h-10 w-40 rounded-full" />
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/work"
-                    className="group font-body font-normal text-[11px] uppercase tracking-[0.2em] text-foreground inline-flex items-center gap-2"
-                  >
-                    <span className="underline-draw">{heroData?.cta_secondary_label || "VIEW WORK"}</span>
-                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1.5 transition-transform duration-300" />
-                  </Link>
-                  <div className="w-px h-5 bg-muted/40" />
-                  <Link
-                    ref={magnetBtnRef}
-                    to="/contact"
-                    className="font-body font-normal text-[11px] uppercase tracking-[0.2em] text-foreground border border-foreground/50 rounded-full px-6 py-2 hover:bg-foreground hover:text-background transition-all duration-300"
-                  >
-                    {heroData?.cta_primary_label || "BOOK SESSION"}
-                  </Link>
-                </>
-              )}
-            </div>
+          {/* HUD Top Left */}
+          
+          {/* HUD Top Right */}
+          <div className="hud-el hud-top-right hidden sm:flex items-center">
+            {heroData?.overline_text}
           </div>
 
-          {/* Right column — tagline + aperture */}
-          <div className="hero-tagline-col hidden md:flex md:col-span-5 lg:col-span-5 flex-col items-start justify-center relative" style={{ paddingLeft: "8%" }}>
-            {/* Aperture ring behind text */}
-            <div className="absolute" style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
-              <ApertureRing />
-            </div>
+        </div>
 
-            {/* Thin rule */}
-            <div className="w-10 h-px mb-6" style={{ background: "rgba(255,255,255,0.2)" }} />
+        {/* Hero Text Block */}
+        <div className="hero-text-block">
+          <h1 className="hero-headline">
+            <span className="reveal-inner block">{headline}</span>
+          </h1>
+          <p className="hero-tagline">
+            {heroData?.tagline || "Your Vision. Our Lens. Perfect Results."}
+          </p>
+          
+        </div>
 
-            {/* Tagline phrases */}
-            {loading ? (
-              <div className="flex flex-col gap-2 relative z-10 w-full mb-4 mt-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-4 w-5/6" />
-              </div>
-            ) : (
-              <p className="font-display italic leading-[2] relative z-10 whitespace-pre-line" style={{ fontSize: "clamp(0.9rem, 1.3vw, 1.5rem)", color: "#A0A0A0", letterSpacing: "0.02em" }}>
-                {heroData?.tagline || "Your Vision.\nOur Lens.\nPerfect Results."}
-              </p>
-            )}
+        {/* Bottom Strip */}
+        <div className="hero-bottom-strip">
+          <div className="scroll-indicator-wrapper flex flex-col items-center gap-1">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9" stroke="rgba(255,255,255,0.35)" strokeWidth="1" />
+              <circle className="scroll-dot" cx="10" cy="10" r="1.5" fill="white" opacity="0.8" />
+            </svg>
+            <span className="text-[9px] tracking-[0.16em] text-white/35 uppercase font-normal font-sans">SCROLL</span>
           </div>
+          <span className="strip-label ml-auto flex items-center">
+            <span className="font-medium text-[9px] tracking-[0.12em] text-white/35 uppercase mr-2">NOW &rarr;</span>
+            <span className="font-normal text-[9px] tracking-[0.06em] text-white/35">
+              {siteSettings?.currently_working_on || heroData?.overline_text}
+            </span>
+          </span>
         </div>
-      </div>
+      </section>
 
-      {/* Camera HUD — bottom-left */}
-      {(!heroData || heroData?.show_camera_hud !== false) && (
-        <div className="absolute bottom-16 left-6 md:left-10 z-10">
-          <CameraHUD />
-        </div>
-      )}
-
-      {/* Scroll indicator — right edge */}
-      <div className="scroll-indicator absolute right-6 z-10 flex flex-col items-center" style={{ top: "50%", transform: "translateY(-50%)" }}>
-        <div className="relative w-px h-20" style={{ background: "rgba(255,255,255,0.3)" }}>
-          <div className="scroll-dot absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-foreground" />
-        </div>
-        <span className="font-body text-[9px] tracking-[0.3em] uppercase mt-3" style={{ fontWeight: 300, color: "#7A7A7A", writingMode: "vertical-lr" }}>
-          Scroll
-        </span>
-      </div>
-
-      {/* Bottom marquee */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-foreground/10 py-3 overflow-hidden marquee-fade">
-        <div className="marquee-track-slow whitespace-nowrap flex">
-          {[0, 1].map(i => (
-            <span key={i} className="font-body font-light text-[10px] uppercase tracking-[0.2em] shrink-0" style={{ color: "#4A4A4A" }}>
-              {"BRAND CAMPAIGNS · CORPORATE SHOOTS · WEDDING COVERAGE · TRADITIONAL COVERAGES · VISUAL STORYTELLING · ".repeat(4)}
+      {/* Marquee (First element after hero) */}
+      <div className="marquee-container">
+        <div className="marquee-track">
+          {[1, 2].map((i) => (
+            <span key={i} className="marquee-text">
+              {heroData?.marquee_text || "THE TWENTY-ONE · BRAND CAMPAIGNS · VISUAL STORYTELLING · WEDDING COVERAGE · CORPORATE SHOOTS · "}
             </span>
           ))}
         </div>
       </div>
-    </section>
+    </>
   );
 };
 

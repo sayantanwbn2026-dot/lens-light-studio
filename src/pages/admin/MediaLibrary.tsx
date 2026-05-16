@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../../components/admin/ui/AdminPageHeader';
+import { MediaFile } from '../../types/database';
 import { AdminInput } from '../../components/admin/ui/AdminInput';
 import { Copy, Trash2, UploadCloud, Check } from 'lucide-react';
 
 export const MediaLibrary = () => {
-    const [files, setFiles] = useState<any[]>([]);
+    const [files, setFiles] = useState<MediaFile[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

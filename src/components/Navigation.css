@@ -1,0 +1,455 @@
+/* Navigation.css — Compact, precise, interactive */
+
+/* ─── Navbar Shell ─── */
+.main-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background 0.35s var(--ease-out),
+              border-color 0.35s var(--ease-out),
+              backdrop-filter 0.35s var(--ease-out);
+}
+
+.main-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease-out);
+}
+
+/* State 2: Scrolled past 40px */
+.main-nav.scrolled {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom-color: var(--color-border);
+}
+
+/* State 3: Scrolling up — accent line draws */
+.main-nav.scrolling-up::after {
+  transform: scaleX(1);
+}
+
+
+
+/* ─── Inner Container ─── */
+.nav-container {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  gap: 20px;
+}
+
+@media (max-width: 1023px) {
+  .nav-container {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .nav-container {
+    height: 56px; /* Slightly taller for better touch targets */
+    padding: 0 20px;
+  }
+  .nav-cta {
+    display: none !important;
+  }
+}
+
+/* ─── Wordmark ─── */
+.nav-wordmark {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out);
+  white-space: nowrap;
+}
+
+.wordmark-white {
+  color: var(--color-white);
+}
+
+.wordmark-black {
+  color: var(--color-primary); /* Uses the primary black color */
+}
+
+.nav-wordmark:hover {
+  color: var(--color-accent); /* Brand orange */
+}
+
+@media (max-width: 767px) {
+  .nav-wordmark {
+    font-size: 11px;
+  }
+}
+
+/* Logo shrink on scroll */
+.main-nav.scrolled .nav-wordmark {
+  color: #1A1917;
+}
+
+.main-nav.scrolled .nav-wordmark:hover {
+  color: var(--color-accent);
+}
+
+/* ─── Desktop Links ─── */
+.nav-links-desktop {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-link {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  color: #6B6A67;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.15s var(--ease-out);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #E8500A;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s var(--ease-out);
+}
+
+.nav-link:hover {
+  color: #1A1917;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link.active {
+  color: #1A1917;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-link.active {
+  color: #FFFFFF;
+}
+
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
+/* ─── State 1: Over dark hero (Specificity Override) ─── */
+.main-nav.nav-hero-dark:not(.scrolled) .nav-wordmark {
+  color: #FFFFFF !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-link:hover,
+.main-nav.nav-hero-dark:not(.scrolled) .nav-link.active {
+  color: #FFFFFF !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-link::after {
+  background: var(--color-accent) !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-link.active::after {
+  background: #FFFFFF !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-cta {
+  background: #FFFFFF !important;
+  color: #1A1917 !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-cta:hover {
+  background: var(--color-accent) !important;
+  color: #FFFFFF !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .nav-mobile-trigger {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.main-nav.nav-hero-dark:not(.scrolled) .work-count-badge {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ─── Work Count Badge ─── */
+.work-count-badge {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--color-muted);
+  vertical-align: super;
+  margin-left: 2px;
+  transition: color 0.35s var(--ease-out);
+}
+
+/* S2: Active section indicator dot */
+.nav-section-dot {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.nav-cta {
+  height: 28px;
+  padding: 0 14px;
+  background: #1A1917;
+  color: var(--color-white);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: background 0.25s var(--ease-out),
+              color 0.25s var(--ease-out);
+  border: none;
+  cursor: none;
+  white-space: nowrap;
+}
+
+.nav-cta:hover {
+  background: #E8500A;
+}
+
+/* Pulsing dot */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.cta-pulse-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--color-white);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.cta-arrow-swap {
+  font-size: 10px;
+  position: absolute;
+  left: 14px;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.nav-cta-inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-cta:hover .cta-pulse-dot {
+  opacity: 0;
+}
+
+.nav-cta:hover .cta-arrow-swap {
+  opacity: 1;
+}
+
+/* ─── Mobile Trigger ─── */
+.nav-mobile-trigger {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--color-secondary);
+  background: none;
+  border: none;
+  cursor: none;
+  transition: color 0.35s var(--ease-out);
+}
+
+/* ─── Mobile Overlay ─── */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0D0C0B;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 20px; /* Refined padding */
+  transform: translateY(-100%);
+  transition: transform 0.6s cubic-bezier(0.83, 0, 0.17, 1); /* Custom ease-in-out from tokens */
+}
+
+.mobile-overlay.open {
+  transform: translateY(0);
+}
+
+/* Top Row */
+.mobile-overlay-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: auto;
+}
+
+.mobile-overlay-wordmark {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.mobile-close-btn {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Mobile Links */
+.mobile-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin: auto 0;
+}
+
+.mobile-link-container {
+  width: 100%;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.45s var(--ease-out),
+              transform 0.45s var(--ease-out);
+}
+
+.mobile-overlay.open .mobile-link-container {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mobile-link {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(2rem, 10vw, 3.8rem); /* Slightly smaller for elegance */
+  color: var(--color-white);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+  padding: 12px 0; /* Tighter padding */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s, padding-left 0.2s;
+  width: 100%;
+}
+
+/* Fix for overlapping global underline from index.css */
+.mobile-link::after {
+  display: none !important;
+}
+
+.mobile-link:hover, .mobile-link:active {
+  color: #E8500A;
+  padding-left: 8px;
+}
+
+/* Hover orange dot */
+.mobile-link-dot {
+  width: 4px;
+  height: 4px;
+  background: #E8500A;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.mobile-link:hover .mobile-link-dot, .mobile-link:active .mobile-link-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mobile-link.active .mobile-link-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Mobile CTA */
+.mobile-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 20px;
+  margin-top: 40px; /* Added significant space here */
+  margin-bottom: 24px;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--color-white);
+  border: 1px solid var(--color-white);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.mobile-cta-btn::after {
+  display: none !important;
+}
+
+.mobile-cta-btn:hover, .mobile-cta-btn:active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Mobile Footer Info */
+.mobile-overlay-footer {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  line-height: 1.5;
+}

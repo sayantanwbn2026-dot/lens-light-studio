@@ -6,10 +6,11 @@ import { format } from 'date-fns';
 
 interface DashboardStats {
     heroUpdated: string | null;
+    heroVideoEnabled: boolean;
+    heroVideoUrl: string | null;
     servicesCount: number;
     workCount: number;
     featuredWorkCount: number;
-    testimonialsCount: number;
     teamCount: number;
     mediaFiles: number;
     mediaSize: number;
@@ -17,6 +18,8 @@ interface DashboardStats {
 
 export const DashboardOverview = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [messagesCount, setMessagesCount] = useState(0);
+    const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -24,15 +27,18 @@ export const DashboardOverview = () => {
         let isMounted = true;
         const fetchStats = async () => {
             try {
-                // Fetch hero last updated
-                const { data: hero } = await supabase.from('hero_content').select('updated_at').single();
+                // Fetch hero data
+                const { data: hero } = await supabase.from('hero_content').select('updated_at, hero_video_enabled, hero_video_url').single();
 
                 // Fetch counts
                 const { count: servicesCount } = await supabase.from('services').select('*', { count: 'exact', head: true });
                 const { count: workCount } = await supabase.from('work_projects').select('*', { count: 'exact', head: true });
                 const { count: featuredWorkCount } = await supabase.from('work_projects').select('*', { count: 'exact', head: true }).eq('featured', true);
-                const { count: testimonialsCount } = await supabase.from('testimonials').select('*', { count: 'exact', head: true });
                 const { count: teamCount } = await supabase.from('team_members').select('*', { count: 'exact', head: true });
+                
+                // Fetch messages counts
+                const { count: totalMsg } = await supabase.from('contact_messages').select('*', { count: 'exact', head: true });
+                const { count: unreadMsg } = await supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('status', 'unread');
 
                 // Media Library (from db table or storage)
                 const { data: media } = await supabase.from('media_library').select('file_size');
@@ -40,12 +46,15 @@ export const DashboardOverview = () => {
                 const mediaSize = media?.reduce((acc, curr) => acc + (curr.file_size || 0), 0) || 0;
 
                 if (isMounted) {
+                    setMessagesCount(totalMsg || 0);
+                    setUnreadCount(unreadMsg || 0);
                     setStats({
                         heroUpdated: hero?.updated_at || null,
+                        heroVideoEnabled: hero?.hero_video_enabled || false,
+                        heroVideoUrl: hero?.hero_video_url || null,
                         servicesCount: servicesCount || 0,
                         workCount: workCount || 0,
                         featuredWorkCount: featuredWorkCount || 0,
-                        testimonialsCount: testimonialsCount || 0,
                         teamCount: teamCount || 0,
                         mediaFiles,
                         mediaSize,
@@ -103,13 +112,16 @@ export const DashboardOverview = () => {
                         </div>
 
                         <div className="bg-[#0A0A0A] border border-[#2A2A2A] p-8 flex flex-col justify-between h-[140px]">
-                            <div className="text-[12px] font-light text-[#8A8A8A] uppercase tracking-wider">Testimonials</div>
-                            <div className="text-[28px] font-light text-white">{stats?.testimonialsCount}</div>
+                            <div className="text-[12px] font-light text-[#8A8A8A] uppercase tracking-wider">Team Members</div>
+                            <div className="text-[28px] font-light text-white">{stats?.teamCount}</div>
                         </div>
 
                         <div className="bg-[#0A0A0A] border border-[#2A2A2A] p-8 flex flex-col justify-between h-[140px]">
-                            <div className="text-[12px] font-light text-[#8A8A8A] uppercase tracking-wider">Team Members</div>
-                            <div className="text-[28px] font-light text-white">{stats?.teamCount}</div>
+                            <div className="text-[12px] font-light text-[#8A8A8A] uppercase tracking-wider">Client Inquiries</div>
+                            <div className="text-[28px] font-light text-white">
+                                {messagesCount} 
+                                {unreadCount > 0 && <span className="text-[14px] text-white bg-[#E8500A] px-2 py-0.5 rounded-full ml-3">{unreadCount} New</span>}
+                            </div>
                         </div>
 
                         <div className="bg-[#0A0A0A] border border-[#2A2A2A] p-8 flex flex-col justify-between h-[140px]">
@@ -145,7 +157,16 @@ export const DashboardOverview = () => {
                                     className="flex items-center justify-between p-6 bg-transparent border border-[#2A2A2A] hover:border-white transition-colors group text-left"
                                 >
                                     <div>
-                                        <div className="text-[14px] font-light text-white group-hover:tracking-widest transition-all duration-500">HERO SECTION</div>
+                                        <div className="text-[14px] font-light text-white group-hover:tracking-widest transition-all duration-500 flex items-center gap-3">
+                                            HERO SECTION
+                                            {stats?.heroVideoUrl && stats.heroVideoEnabled ? (
+                                                <span className="font-inter font-medium text-[9px] text-[#FFFFFF] tracking-[0.1em] px-2 py-0.5 border border-[#4A4A4A] rounded-full">● VIDEO ACTIVE</span>
+                                            ) : stats?.heroVideoUrl && !stats.heroVideoEnabled ? (
+                                                <span className="font-inter font-medium text-[9px] text-[#4A4A4A] tracking-[0.1em] px-2 py-0.5 border border-[#2A2A2A] rounded-full">● VIDEO PAUSED</span>
+                                            ) : (
+                                                <span className="font-inter font-medium text-[9px] text-[#3A3A3A] tracking-[0.1em] px-2 py-0.5 border border-[#1E1E1E] rounded-full">○ IMAGE ONLY</span>
+                                            )}
+                                        </div>
                                         <div className="text-[11px] font-light text-[#5A5A5A] mt-1">Edit main landing content & imagery</div>
                                     </div>
                                     <span className="text-white/50 group-hover:text-white transition-colors">→</span>
@@ -158,17 +179,6 @@ export const DashboardOverview = () => {
                                     <div>
                                         <div className="text-[14px] font-light text-white group-hover:tracking-widest transition-all duration-500">WORK / PORTFOLIO</div>
                                         <div className="text-[11px] font-light text-[#5A5A5A] mt-1">Manage projects and featured reel</div>
-                                    </div>
-                                    <span className="text-white/50 group-hover:text-white transition-colors">→</span>
-                                </button>
-
-                                <button
-                                    onClick={() => navigate('/admin/testimonials')}
-                                    className="flex items-center justify-between p-6 bg-transparent border border-[#2A2A2A] hover:border-white transition-colors group text-left"
-                                >
-                                    <div>
-                                        <div className="text-[14px] font-light text-white group-hover:tracking-widest transition-all duration-500">TESTIMONIALS</div>
-                                        <div className="text-[11px] font-light text-[#5A5A5A] mt-1">Update client quotes and names</div>
                                     </div>
                                     <span className="text-white/50 group-hover:text-white transition-colors">→</span>
                                 </button>

@@ -62,7 +62,7 @@ const DarkroomHero = () => {
   const title = "THE TWENTY-ONE";
 
   return (
-    <section ref={containerRef} className="relative h-screen w-full overflow-hidden bg-background">
+    <section ref={containerRef} data-theme="dark" className="relative h-screen w-full overflow-hidden bg-background">
       {/* SVG filter for chemical ripple */}
       <svg className="absolute w-0 h-0">
         <defs>
@@ -116,15 +116,16 @@ const DarkroomHero = () => {
       <div className="absolute bottom-20 right-6 w-8 h-8 border-b border-r border-foreground/20" />
 
       {/* Film counter */}
-      <div className="absolute top-24 left-6 md:left-10 font-body font-light text-[10px] text-muted tracking-[0.2em] uppercase opacity-60">
-        001 / Kolkata / Est. 2024
+      <div className="absolute top-24 left-6 md:left-10 uppercase opacity-60" style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-light)', fontSize: '10px', color: 'var(--color-muted)', letterSpacing: 'var(--tracking-caps)' }}>
+        001 / Creative Studio
       </div>
 
       {/* Title — letter by letter burn-in */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
         <h1
           ref={textRef}
-          className="font-display font-bold text-[12vw] md:text-[10vw] leading-none text-foreground tracking-[0.08em] text-center"
+          className="text-center"
+          style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-display)', fontSize: '12vw', color: 'var(--color-primary)', letterSpacing: 'var(--tracking-display)', lineHeight: 1 }}
         >
           {title.split("").map((char, i) => (
             <span key={i} className="burn-letter inline-block" style={{ minWidth: char === " " ? "0.3em" : undefined }}>
@@ -132,7 +133,7 @@ const DarkroomHero = () => {
             </span>
           ))}
         </h1>
-        <p className="darkroom-subtitle font-body font-light text-xs md:text-sm text-muted uppercase tracking-[0.4em] mt-6">
+        <p className="darkroom-subtitle uppercase mt-6" style={{ fontFamily: 'var(--font-sans)', fontWeight: 'var(--weight-light)', fontSize: '12px', color: 'var(--color-muted)', letterSpacing: 'var(--tracking-caps)' }}>
           Your Vision · Our Lens · Perfect Results
         </p>
       </div>

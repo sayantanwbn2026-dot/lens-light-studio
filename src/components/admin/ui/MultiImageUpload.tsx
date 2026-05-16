@@ -121,11 +121,7 @@ export const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
                 newUrls.push(publicUrl);
 
-                await supabase.from('media_library').insert([{
-                    file_url: publicUrl,
-                    file_name: file.name,
-                    file_size: file.size,
-                }]);
+                // media_library table is not in the schema, skipping insert
             }
 
             onChange([...images, ...newUrls]);

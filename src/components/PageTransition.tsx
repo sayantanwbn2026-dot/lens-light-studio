@@ -1,20 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import gsap from "gsap";
 
-const pageLetters: Record<string, string> = {
-  "/": "T",
-  "/work": "W",
-  "/services": "S",
-  "/about": "A",
-  "/contact": "C",
-};
-
 const PageTransition = () => {
   const location = useLocation();
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const letterRef = useRef<HTMLSpanElement>(null);
-  const [letter, setLetter] = useState("");
+  const lineRef = useRef<HTMLDivElement>(null);
   const prevPath = useRef(location.pathname);
   const isFirstRender = useRef(true);
 
@@ -28,45 +18,44 @@ const PageTransition = () => {
     if (location.pathname === prevPath.current) return;
     prevPath.current = location.pathname;
 
-    const newLetter = pageLetters[location.pathname] || "•";
-    setLetter(newLetter);
-
+    const mainEl = document.querySelector('main');
+    
     const tl = gsap.timeline();
-    tl.set(overlayRef.current, { display: "flex" });
-    tl.fromTo(
-      overlayRef.current,
-      { clipPath: "inset(0 0 100% 0)" },
-      { clipPath: "inset(0 0 0% 0)", duration: 0.4, ease: "power3.inOut" }
-    );
-    tl.fromTo(
-      letterRef.current,
-      { opacity: 0, scale: 0.8 },
-      { opacity: 0.12, scale: 1, duration: 0.3, ease: "power2.out" },
-      0.2
-    );
-    tl.to(letterRef.current, { opacity: 0, duration: 0.2 }, 0.55);
-    tl.to(
-      overlayRef.current,
-      { clipPath: "inset(100% 0 0 0)", duration: 0.4, ease: "power3.inOut" },
-      0.6
-    );
-    tl.set(overlayRef.current, { display: "none" });
+    // Ensure the line is visible and scaled to 0 from left
+    tl.set(lineRef.current, { scaleX: 0, transformOrigin: "left", opacity: 1 });
+    
+    // Draw line left to right
+    tl.to(lineRef.current, { scaleX: 1, duration: 0.4, ease: "power2.inOut" });
+    
+    // Fade page content up
+    if (mainEl) {
+      tl.fromTo(mainEl, 
+        { y: 12, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+      );
+    }
+    
+    // Fade line out or retract
+    tl.to(lineRef.current, { opacity: 0, duration: 0.2 }, "-=0.2");
+
   }, [location.pathname]);
 
   return (
     <div
-      ref={overlayRef}
-      className="fixed inset-0 z-[9998] bg-background items-center justify-center pointer-events-none"
-      style={{ display: "none" }}
-    >
-      <span
-        ref={letterRef}
-        className="font-display italic text-[50vw] leading-none text-foreground select-none"
-        style={{ opacity: 0 }}
-      >
-        {letter}
-      </span>
-    </div>
+      ref={lineRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '2px',
+        backgroundColor: 'var(--color-accent)',
+        zIndex: 9999,
+        transform: 'scaleX(0)',
+        transformOrigin: 'left',
+        pointerEvents: 'none'
+      }}
+    />
   );
 };
 

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useContent } from '../../hooks/useContent';
+import { useContent, invalidateContent } from '../../hooks/useContent';
+import { Service } from '../../types/database';
 import { AdminPageHeader } from '../../components/admin/ui/AdminPageHeader';
 import { AdminInput, AdminTextarea } from '../../components/admin/ui/AdminInput';
 import { AdminButton } from '../../components/admin/ui/AdminButton';
 import { ImageUpload } from '../../components/admin/ui/ImageUpload';
 import { DynamicTagInput } from '../../components/admin/ui/DynamicTagInput';
 import { SortableCard } from '../../components/admin/ui/SortableCard';
+import { CustomDropdown } from '../../components/admin/ui/CustomDropdown';
+import { VideoUpload } from '../../components/admin/ui/VideoUpload';
 import { Check, Plus } from 'lucide-react';
 import {
     DndContext,
@@ -25,8 +28,8 @@ import {
 } from '@dnd-kit/sortable';
 
 export const ServicesEditor = () => {
-    const { data, loading, mutate } = useContent('services', { column: 'order_index', ascending: true });
-    const [items, setItems] = useState<any[]>([]);
+    const { data, loading, mutate } = useContent<Service[]>('services', { column: 'order_index', ascending: true });
+    const [items, setItems] = useState<Service[]>([]);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [savedAction, setSavedAction] = useState(false);
@@ -55,7 +58,7 @@ export const ServicesEditor = () => {
         }
     };
 
-    const handleUpdate = (id: string, field: string, value: any) => {
+    const handleUpdate = (id: string, field: keyof Service, value: unknown) => {
         setItems((prev) =>
             prev.map((item) => item.id === id ? { ...item, [field]: value } : item)
         );
@@ -71,7 +74,9 @@ export const ServicesEditor = () => {
             description: '',
             deliverables: [],
             enquiry_cta_label: 'ENQUIRE',
-            image_url: null
+            image_url: null,
+            video_url: null,
+            media_type: 'image'
         };
         setItems([...items, newItem]);
         setExpandedId(newId);
@@ -92,20 +97,31 @@ export const ServicesEditor = () => {
         const { error } = await supabase
             .from('services')
             .upsert(items.map((item) => {
-                // Remove properties that might not be in DB schema if any, though here they match
-                const { ...dbItem } = item;
-                return dbItem;
+                // Ensure only existing columns are sent to the DB
+                return {
+                    id: item.id,
+                    order_index: item.order_index,
+                    number_label: item.number_label,
+                    title: item.title,
+                    description: item.description,
+                    deliverables: item.deliverables,
+                    enquiry_cta_label: item.enquiry_cta_label,
+                    image_url: item.image_url,
+                    video_url: item.video_url,
+                    media_type: item.media_type
+                };
             }));
 
         setSaving(false);
 
         if (!error) {
             mutate(items);
+            invalidateContent('services');
             setSavedAction(true);
             setTimeout(() => setSavedAction(false), 3000);
         } else {
-            console.error(error);
-            alert('Failed to save services');
+            console.error('Supabase Save Error:', error);
+            alert(`Failed to save services: ${error.message} (${error.code || 'No code'})`);
         }
     };
 
@@ -190,12 +206,29 @@ export const ServicesEditor = () => {
                                             />
                                         </div>
 
-                                        <div>
-                                            <ImageUpload
-                                                label="Service Image"
-                                                value={item.image_url}
-                                                onChange={(url) => handleUpdate(item.id, 'image_url', url)}
+                                        <div className="flex flex-col gap-8">
+                                            <CustomDropdown
+                                                label="Media Type"
+                                                value={item.media_type || 'image'}
+                                                options={['image', 'video']}
+                                                onChange={(val) => handleUpdate(item.id, 'media_type', val)}
                                             />
+
+                                            {item.media_type === 'video' ? (
+                                                <VideoUpload
+                                                    label="Service Video"
+                                                    description="Max 50MB. Recommended: 3:2 or 16:9 aspect ratio."
+                                                    value={item.video_url}
+                                                    onChange={(url) => handleUpdate(item.id, 'video_url', url)}
+                                                />
+                                            ) : (
+                                                <ImageUpload
+                                                    label="Service Image"
+                                                    description="Recommended: 1200×800px (3:2) or 1600×900px (16:9)."
+                                                    value={item.image_url}
+                                                    onChange={(url) => handleUpdate(item.id, 'image_url', url)}
+                                                />
+                                            )}
                                         </div>
                                     </div>
 

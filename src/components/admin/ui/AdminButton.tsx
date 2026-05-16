@@ -31,7 +31,7 @@ export const AdminButton = React.forwardRef<HTMLButtonElement, AdminButtonProps>
                     )}
                 </span>
                 {variant === 'primary' && !isLoading && (
-                    <span className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
+                    <span className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-500" style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }} />
                 )}
                 {variant === 'primary' && !isLoading && (
                     <span className="absolute inset-0 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">

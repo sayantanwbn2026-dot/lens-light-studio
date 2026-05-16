@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useContent } from '../../hooks/useContent';
+import { useContent, invalidateContent } from '../../hooks/useContent';
+import { SiteSettings } from '../../types/database';
 import { AdminPageHeader } from '../../components/admin/ui/AdminPageHeader';
 import { AdminInput, AdminTextarea } from '../../components/admin/ui/AdminInput';
 import { AdminButton } from '../../components/admin/ui/AdminButton';
 import { Check } from 'lucide-react';
 
 export const FooterSettings = () => {
-    const { data, loading, mutate } = useContent('site_settings');
-    const [formData, setFormData] = useState<any>({});
+    const { data, loading, mutate } = useContent<SiteSettings>('site_settings');
+    const [formData, setFormData] = useState<Partial<SiteSettings>>({});
     const [saving, setSaving] = useState(false);
     const [savedAction, setSavedAction] = useState(false);
 
@@ -18,8 +19,8 @@ export const FooterSettings = () => {
         }
     }, [data]);
 
-    const handleChange = (field: string, value: any) => {
-        setFormData((prev: any) => ({ ...prev, [field]: value }));
+    const handleChange = (field: keyof SiteSettings, value: unknown) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
     const handleSave = async () => {
@@ -34,6 +35,7 @@ export const FooterSettings = () => {
 
         if (!error) {
             mutate(formData);
+            invalidateContent('site_settings');
             setSavedAction(true);
             setTimeout(() => setSavedAction(false), 3000);
         } else {
@@ -92,8 +94,45 @@ export const FooterSettings = () => {
                             label="Footer Tagline"
                             value={formData.footer_tagline || ''}
                             onChange={(e) => handleChange('footer_tagline', e.target.value)}
-                            placeholder="e.g., Crafted with obsession in Kolkata."
+                            placeholder="Crafted with obsession..."
                         />
+
+                        <AdminInput
+                            label="Footer Copyright"
+                            value={formData.footer_copyright || ''}
+                            onChange={(e) => handleChange('footer_copyright', e.target.value)}
+                            placeholder="© 2025 The Twenty-One..."
+                        />
+
+                        <AdminInput
+                            label="Currently Working On"
+                            description="Text displayed in the scrolling ticker above the footer and in the hero bottom strip."
+                            value={formData.currently_working_on || ''}
+                            onChange={(e) => handleChange('currently_working_on', e.target.value)}
+                            placeholder="e.g., Brand Campaign for Luminous..."
+                        />
+                    </div>
+                </section>
+
+                {/* Branding & Visuals */}
+                <section className="flex flex-col gap-8">
+                    <div className="pb-4 border-b border-[#1E1E1E]">
+                        <h3 className="text-[13px] font-light text-white uppercase tracking-widest">BRANDING & VISUALS</h3>
+                    </div>
+
+                    <div className="bg-[#0A0A0A] border border-[#1E1E1E] p-8 flex flex-col gap-8">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[11px] text-[#5A5A5A] uppercase tracking-widest">Navbar Wordmark Color</label>
+                            <select 
+                                value={formData.wordmark_color || 'white'} 
+                                onChange={(e) => handleChange('wordmark_color', e.target.value)}
+                                className="w-full h-12 bg-black border border-[#1E1E1E] text-white px-4 text-[13px] font-light focus:border-white transition-colors outline-none appearance-none cursor-pointer"
+                            >
+                                <option value="white">White (Default)</option>
+                                <option value="black">Black</option>
+                            </select>
+                            <p className="text-[10px] text-[#5A5A5A] mt-1 italic">Use black if your hero background is very light.</p>
+                        </div>
                     </div>
                 </section>
 
@@ -117,10 +156,10 @@ export const FooterSettings = () => {
                             placeholder="https://linkedin.com/..."
                         />
                         <AdminInput
-                            label="Behance URL"
-                            value={formData.behance_url || ''}
-                            onChange={(e) => handleChange('behance_url', e.target.value)}
-                            placeholder="https://behance.net/..."
+                            label="YouTube URL"
+                            value={formData.youtube_url || ''}
+                            onChange={(e) => handleChange('youtube_url', e.target.value)}
+                            placeholder="https://youtube.com/..."
                         />
                     </div>
                 </section>

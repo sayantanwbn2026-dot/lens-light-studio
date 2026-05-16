@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useContent } from '../../hooks/useContent';
+import { useContent, invalidateContent } from '../../hooks/useContent';
+import { StatItem } from '../../types/database';
 import { AdminPageHeader } from '../../components/admin/ui/AdminPageHeader';
 import { AdminButton } from '../../components/admin/ui/AdminButton';
 import { Check, Plus, GripVertical, Trash2 } from 'lucide-react';
@@ -24,8 +25,8 @@ import { CSS } from '@dnd-kit/utilities';
 
 interface SortableRowProps {
     id: string;
-    item: any;
-    onUpdate: (id: string, field: string, value: string) => void;
+    item: StatItem;
+    onUpdate: (id: string, field: keyof StatItem, value: string) => void;
     onDelete: (id: string) => void;
 }
 
@@ -59,9 +60,9 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, item, onUpdate, onDelete 
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <input
                     type="text"
-                    value={item.number || ''}
+                    value={item.number_value || ''}
                     placeholder="Number (e.g. 120+)"
-                    onChange={(e) => onUpdate(item.id, 'number', e.target.value)}
+                    onChange={(e) => onUpdate(item.id, 'number_value', e.target.value)}
                     className="bg-transparent text-[24px] font-light text-white focus:outline-none placeholder:text-[#3A3A3A] w-full"
                 />
                 <input
@@ -88,8 +89,8 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, item, onUpdate, onDelete 
 };
 
 export const StatsEditor = () => {
-    const { data, loading, mutate } = useContent('stats', { column: 'order_index', ascending: true });
-    const [items, setItems] = useState<any[]>([]);
+    const { data, loading, mutate } = useContent<StatItem[]>('stats', { column: 'order_index', ascending: true });
+    const [items, setItems] = useState<StatItem[]>([]);
     const [saving, setSaving] = useState(false);
     const [savedAction, setSavedAction] = useState(false);
 
@@ -116,7 +117,7 @@ export const StatsEditor = () => {
         }
     };
 
-    const handleUpdate = (id: string, field: string, value: string) => {
+    const handleUpdate = (id: string, field: keyof StatItem, value: string) => {
         setItems((prev) =>
             prev.map((item) => item.id === id ? { ...item, [field]: value } : item)
         );
@@ -128,7 +129,7 @@ export const StatsEditor = () => {
             {
                 id: crypto.randomUUID(),
                 order_index: items.length,
-                number: '',
+                number_value: '',
                 label: ''
             }
         ]);
@@ -145,15 +146,18 @@ export const StatsEditor = () => {
 
         const { error } = await supabase
             .from('stats')
-            .upsert(items.map((item) => {
-                const { ...dbItem } = item;
-                return dbItem;
-            }));
+            .upsert(items.map((item) => ({
+                id: item.id,
+                order_index: item.order_index,
+                number_value: item.number_value,
+                label: item.label
+            })));
 
         setSaving(false);
 
         if (!error) {
             mutate(items);
+            invalidateContent('stats');
             setSavedAction(true);
             setTimeout(() => setSavedAction(false), 3000);
         } else {

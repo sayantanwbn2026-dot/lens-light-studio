@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { LogOut } from 'lucide-react';
 
 const navLinks = [
@@ -9,18 +10,31 @@ const navLinks = [
     { path: '/admin/services', label: 'Services' },
     { path: '/admin/work', label: 'Work / Portfolio' },
     { path: '/admin/about', label: 'About' },
-    { path: '/admin/testimonials', label: 'Testimonials' },
     { path: '/admin/stats', label: 'Stats' },
     { path: '/admin/footer', label: 'Footer & Contact' },
     { path: '/admin/media', label: 'Media Library' },
+    { path: '/admin/messages', label: 'Client Inquiries' },
     { path: '/admin/settings', label: 'Settings' },
 ];
 
 export const AdminLayout = () => {
     const { user, signOut } = useAuth();
+    const [heroVideoActive, setHeroVideoActive] = useState(false);
+
+    useEffect(() => {
+        // Since AdminLayout wraps everything, we fetch once on mount. 
+        // For real-time updates without context, we check sessionStorage or re-fetch periodically, but a mount fetch is usually sufficient.
+        const checkHeroVideo = async () => {
+            const { data } = await supabase.from('hero_content').select('hero_video_enabled, hero_video_url').single();
+            if (data?.hero_video_enabled && data?.hero_video_url) {
+                setHeroVideoActive(true);
+            }
+        };
+        checkHeroVideo();
+    }, []);
 
     return (
-        <div className="min-h-screen bg-black text-white flex font-inter overflow-hidden relative selection:bg-white/20">
+        <div className="admin-container min-h-screen bg-black text-white flex font-inter overflow-hidden relative selection:bg-white/20">
 
             {/* Noise overlay */}
             <div
@@ -46,13 +60,23 @@ export const AdminLayout = () => {
                             to={link.path}
                             end={link.exact}
                             className={({ isActive }) =>
-                                `px-4 py-2 text-[13px] font-light transition-all duration-300 border-l-2 ${isActive
+                                `px-4 py-2 text-[13px] font-light transition-all duration-300 border-l-2 flex items-center justify-between ${isActive
                                     ? 'border-white text-white bg-white/5'
                                     : 'border-[#3A3A3A] text-white/70 hover:text-white hover:border-white/50'
                                 }`
                             }
                         >
-                            {link.label}
+                            <span>{link.label}</span>
+                            {link.label === 'Hero' && heroVideoActive && (
+                                <span style={{
+                                    height: '6px',
+                                    width: '6px',
+                                    borderRadius: '50%',
+                                    background: '#FFFFFF',
+                                    display: 'inline-block',
+                                    opacity: 0.6,
+                                }} />
+                            )}
                         </NavLink>
                     ))}
                 </nav>
@@ -72,7 +96,7 @@ export const AdminLayout = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-[240px] h-screen overflow-y-auto w-full">
+            <main className="flex-1 ml-[240px] h-screen overflow-y-auto w-full" data-lenis-prevent>
                 <div className="p-12 max-w-6xl mx-auto pb-32">
                     <Outlet />
                 </div>
