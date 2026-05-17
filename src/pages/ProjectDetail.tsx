@@ -92,7 +92,7 @@ const ProjectDetail = () => {
         </Link>
 
         {/* Two-column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: '54px' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-[54px]">
           
           {/* Left 60% (7/12) */}
           <div className="lg:col-span-7 col-span-12">
