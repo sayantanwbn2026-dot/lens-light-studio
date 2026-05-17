@@ -161,7 +161,7 @@ const Navigation = () => {
                   to={link.path}
                   className={`nav-link ${location.pathname === link.path ? "active" : ""}`}
                 >
-                  {link.label.toLowerCase()}
+                  {link.label.toUpperCase()}
                   {link.label === "Work" && publishedCount > 0 && (
                     <span className="work-count-badge">({publishedCount})</span>
                   )}
@@ -219,7 +219,7 @@ const Navigation = () => {
                 className={`mobile-link ${location.pathname === link.path ? "active" : ""}`}
               >
                 <span className="mobile-link-dot" />
-                {link.label}
+                {link.label.toUpperCase()}
               </Link>
             </div>
           ))}
