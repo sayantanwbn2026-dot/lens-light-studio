@@ -7,6 +7,8 @@ export interface SiteSettings {
   currently_working_on?: string;
   footer_text?: string;
   copyright_text?: string;
+  footer_tagline?: string;
+  wordmark_color?: 'white' | 'black';
 }
 
 export interface HeroContent {

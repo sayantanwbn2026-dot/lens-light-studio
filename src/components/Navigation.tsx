@@ -162,9 +162,6 @@ const Navigation = () => {
                   className={`nav-link ${location.pathname === link.path ? "active" : ""}`}
                 >
                   {link.label.toUpperCase()}
-                  {link.label === "Work" && publishedCount > 0 && (
-                    <span className="work-count-badge">({publishedCount})</span>
-                  )}
                 </Link>
               ))}
               <div

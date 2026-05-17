@@ -229,7 +229,9 @@
   .hud-el.hud-top-left { display: none; }
 
   .hero-text-block {
-    bottom: 25%; /* Move up slightly for better balance on mobile */
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
     left: 20px;
     right: 20px;
     max-width: 100%;
@@ -263,7 +265,6 @@
 /* ── Small Mobile (< 480px) ── */
 @media (max-width: 479px) {
   .hero-text-block {
-    bottom: 28px;
     left: 16px;
     right: 16px;
   }
