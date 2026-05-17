@@ -45,7 +45,7 @@ const Index = () => {
 
       {/* WORK PREVIEW SECTION */}
       <section className="section-padding bg-[var(--color-off-white)]">
-        <WorkGrid limit={6} />
+        <WorkGrid limit={3} featuredOnly={true} />
       </section>
 
       {/* ABOUT TEASER */}

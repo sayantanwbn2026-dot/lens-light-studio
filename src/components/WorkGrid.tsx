@@ -10,12 +10,13 @@ import "./WorkGrid.css";
 interface WorkGridProps {
   limit?: number; // for homepage
   isPageHeader?: boolean;
+  featuredOnly?: boolean;
 }
 
 // 4:5 aspect ratio for standard cards
 const STANDARD_ASPECT_RATIO = "125%";
 
-const WorkGrid = ({ limit, isPageHeader }: WorkGridProps) => {
+const WorkGrid = ({ limit, isPageHeader, featuredOnly }: WorkGridProps) => {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const { data: allProjects, loading } = useContent('work_projects', { column: 'order_index', ascending: true });
   const gridRef = useRef<HTMLDivElement>(null);
@@ -51,7 +52,12 @@ const WorkGrid = ({ limit, isPageHeader }: WorkGridProps) => {
     ? (allProjects || []) 
     : (allProjects || []).filter((p: Project) => p.category?.toUpperCase() === activeFilter);
     
-  const displayProjects = limit ? filtered.slice(0, limit) : filtered;
+  // Apply featured filter if requested
+  const prioritized = featuredOnly 
+    ? filtered.filter((p: Project) => p.featured === true)
+    : filtered;
+    
+  const displayProjects = limit ? prioritized.slice(0, limit) : prioritized;
 
   useLayoutEffect(() => {
     // Filter animation

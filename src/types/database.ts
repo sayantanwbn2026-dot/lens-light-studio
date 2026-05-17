@@ -84,12 +84,20 @@ export interface Project {
   title: string;
   category: string;
   description?: string;
+  short_description?: string;
+  full_description?: string;
   thumbnail_url?: string;
   image_url?: string;
+  cover_image_url?: string;
   video_url?: string;
+  video_type?: 'none' | 'upload' | 'embed';
+  gallery_images?: string[];
   client?: string;
+  client_name?: string;
   year?: string;
+  project_year?: string;
   tags?: string[];
+  featured?: boolean;
   order_index: number;
 }
 
