@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useCallback, useEffect, useState, lazy, Suspense } from "react";
 
-import CustomCursor from "./components/CustomCursor";
 import FilmGrain from "./components/FilmGrain";
 import ScrollProgress from "./components/ScrollProgress";
 import Preloader from "./components/Preloader";
@@ -77,7 +76,6 @@ const AppContent = () => {
       <Preloader />
       <FilmGrain />
       <ScrollProgress />
-      <CustomCursor />
       <ScrollToTop />
       <Suspense fallback={<div className="h-screen w-screen bg-black" />}>
         <Routes>

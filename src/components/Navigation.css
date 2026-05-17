@@ -240,7 +240,6 @@
   transition: background 0.25s var(--ease-out),
               color 0.25s var(--ease-out);
   border: none;
-  cursor: none;
   white-space: nowrap;
 }
 
@@ -295,7 +294,6 @@
   color: var(--color-secondary);
   background: none;
   border: none;
-  cursor: none;
   transition: color 0.35s var(--ease-out);
 }
 

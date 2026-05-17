@@ -121,7 +121,6 @@ body {
   background: var(--color-white);
   letter-spacing: var(--tracking-normal);
   line-height: var(--leading-normal);
-  cursor: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

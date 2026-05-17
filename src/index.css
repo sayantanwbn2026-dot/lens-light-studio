@@ -44,7 +44,6 @@
 
   * {
     @apply border-border;
-    cursor: none;
   }
 
   @media (pointer: coarse) {
